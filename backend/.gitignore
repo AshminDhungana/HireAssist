@@ -1,0 +1,71 @@
+# --- Python / FastAPI ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.db
+instance/
+*.sqlite3
+
+# Compiled files and bytecode caches
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# --- Virtual Environments ---
+venv/
+env/
+.venv/
+ENV/
+Pipfile.lock
+
+# --- Logs and temp files ---
+*.log
+*.out
+*.tmp
+*.pid
+*.seed
+*.pid.lock
+
+# --- Test artifacts ---
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+
+# --- IDE and editor stuff ---
+.vscode/
+.idea/
+*.sw?
+*.sublime*
+.DS_Store
+Thumbs.db
+
+# --- Environment and secrets ---
+.env
+.env.*
+*.env
+config.json
+secrets.json
+
+# --- OS generated files ---
+._*
+ehthumbs.db
+Icon?
+.Spotlight-V100
+.Trashes
+
+# --- Docker / CI ---
+*.pid.lock
+docker-compose.override.yml
+docker-compose.dev.yml
+__docker_cache__/
+
+# --- Misc ---
+*.bak
+*.orig
