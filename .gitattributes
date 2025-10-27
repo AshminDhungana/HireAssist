@@ -1,0 +1,17 @@
+# Set all files to normalize line endings automatically
+* text=auto
+
+# Explicitly set LF (Unix-style) endings for source and config files
+*.js   text eol=lf
+*.ts   text eol=lf
+*.jsx  text eol=lf
+*.tsx  text eol=lf
+*.css  text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+
+# Optional: Set CRLF for Windows-only scripts, if needed
+*.bat  text eol=crlf
+*.cmd  text eol=crlf

@@ -7,6 +7,9 @@ __pycache__/
 instance/
 *.sqlite3
 
+#Others
+app/api/v1/uploads/
+
 # Compiled files and bytecode caches
 *.so
 *.egg
