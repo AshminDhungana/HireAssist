@@ -67,6 +67,7 @@ This system is a **comprehensive, production-ready Resume/CV Screening and Parsi
 resume-screening-system/
 ├── frontend/                    # React application
 │   ├── src/
+│   │   ├── api/ 
 │   │   ├── components/         # Reusable UI components
 │   │   ├── pages/             # Page components
 │   │   ├── hooks/             # Custom React hooks

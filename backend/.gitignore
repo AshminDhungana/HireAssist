@@ -9,6 +9,7 @@ instance/
 
 #Others
 app/api/v1/uploads/
+uploads/
 
 # Compiled files and bytecode caches
 *.so
