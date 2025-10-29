@@ -10,6 +10,7 @@ instance/
 #Others
 app/api/v1/uploads/
 uploads/
+.env
 
 # Compiled files and bytecode caches
 *.so

@@ -203,6 +203,11 @@ CREATE TABLE screening_results (
     detailed_analysis JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+**Note:**  
+> This schema requires PostgreSQL with the `pgvector` extension enabled for embedding/vector operations.  
+> Initialize your database and apply Alembic migrations to create these tables automatically.
+
 ```
 
 ## 🤖 AI Architecture
