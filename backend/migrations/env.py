@@ -1,10 +1,23 @@
+import os
 from logging.config import fileConfig
-
+from dotenv import load_dotenv
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-import os
 from alembic import context
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from app.core.config import settings
+from app.models.candidate import Candidate
+from app.models.resume import Resume
+from app.core.database import Base
+# from app.models.user import User
+# from app.models.job import Job
+# (import all tables here)
 
+
+engine = create_engine(settings.DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+load_dotenv()
 database_url = os.getenv("DATABASE_URL", context.config.get_main_option("sqlalchemy.url"))
 context.config.set_main_option("sqlalchemy.url", database_url)
 # this is the Alembic Config object, which provides
@@ -20,7 +33,8 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = Base.metadata
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

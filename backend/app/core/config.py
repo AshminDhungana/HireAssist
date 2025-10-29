@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     PINECONE_API_KEY: str
     SECRET_KEY: str
     DATABASE_URL: str
+    PINECONE_ENVIRONMENT: str
     # Add other config vars as needed
 
     class Config:

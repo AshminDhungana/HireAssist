@@ -1,20 +1,22 @@
 import PyPDF2
 from docx import Document
 from typing import Dict, Any
-from langchain.llms import OpenAI
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+from langchain_openai import OpenAI
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 import json
 
-from app.core.config import settings  # import your config singleton
+from app.core.config import settings
 
 class RAGResumeParser:
     def __init__(self):
-        # Load API key from centralized config
+        # Initialize LLM with config
         self.llm = OpenAI(
             temperature=0,
             openai_api_key=settings.OPENAI_API_KEY
         )
+        
+        # Define prompt template
         self.prompt = PromptTemplate(
             input_variables=["resume_text"],
             template=(
@@ -25,10 +27,12 @@ class RAGResumeParser:
                 "\n- experience (as a list with company, title, dates)"
                 "\nResume:\n{resume_text}\n"
                 "Format output JSON as:"
-                "{\"contact_info\": ..., \"skills\": [...], \"education\": [...], \"experience\": [...]}"
+                '{"contact_info": ..., "skills": [...], "education": [...], "experience": [...]}'
             )
         )
-        self.chain = LLMChain(llm=self.llm, prompt=self.prompt)
+        
+        # Build chain using LCEL (modern approach)
+        self.chain = self.prompt | self.llm | StrOutputParser()
 
     def extract_text_from_pdf(self, filepath: str) -> str:
         text = ""
@@ -54,10 +58,14 @@ class RAGResumeParser:
 
     def parse_resume(self, filepath: str, mimetype: str) -> Dict[str, Any]:
         resume_text = self.extract_text_from_file(filepath, mimetype)
-        llm_output = self.chain.run(resume_text)
+        
+        # Invoke chain with LCEL
+        llm_output = self.chain.invoke({"resume_text": resume_text})
+        
         try:
             parsed_data = json.loads(llm_output)
         except Exception:
             parsed_data = {"raw_output": llm_output}
+        
         parsed_data["raw_text"] = resume_text
         return parsed_data

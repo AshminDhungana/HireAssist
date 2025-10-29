@@ -1,8 +1,12 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, status
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.database import get_db
 from typing import List
 from app.services.rag_resume_parser import RAGResumeParser
 from app.services.resumeparser import ResumeParser
 import os
+from sqlalchemy import ForeignKey
 from sqlalchemy import Column, String, DateTime, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
@@ -71,13 +75,3 @@ async def parse_resume(resume_id: str, db: AsyncSession = Depends(get_db)):
     await db.save_parsed_resume(resume_id, rag_result)
     return rag_result
 
-class Resume(Base):
-    __tablename__ = "resumes"
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    candidate_id = Column(UUID(as_uuid=True), ForeignKey("candidates.id"), nullable=True)
-    filename = Column(String, nullable=False)
-    filepath = Column(String, nullable=False)
-    parsed_data = Column(JSON)  # stores output from parsing pipeline
-    created_at = Column(DateTime, server_default=func.now())
-    # Uncomment and configure for vector DB embedding integration:
-    # embedding = Column(Vector(1536))  # pgvector support
