@@ -6,40 +6,38 @@ from sqlalchemy import pool
 from alembic import context
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+# Import ALL models
 from app.core.config import settings
+from app.core.database import Base
+from app.models.users import User
 from app.models.candidate import Candidate
 from app.models.resume import Resume
-from app.core.database import Base
-# from app.models.user import User
-# from app.models.job import Job
-# (import all tables here)
+from app.models.jobs import Job
+from app.models.applications import Application
+from app.models.organizations import Organization
+from app.models.screening_results import ScreeningResult
 
+load_dotenv()
 
+# Create engine
 engine = create_engine(settings.DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-load_dotenv()
+
 database_url = os.getenv("DATABASE_URL", context.config.get_main_option("sqlalchemy.url"))
 context.config.set_main_option("sqlalchemy.url", database_url)
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
 # Interpret the config file for Python logging.
-# This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
-
-
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
 
 
 def run_migrations_offline() -> None:
@@ -52,7 +50,6 @@ def run_migrations_offline() -> None:
 
     Calls to context.execute() here emit the given string to the
     script output.
-
     """
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
@@ -71,7 +68,6 @@ def run_migrations_online() -> None:
 
     In this scenario we need to create an Engine
     and associate a connection with the context.
-
     """
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
