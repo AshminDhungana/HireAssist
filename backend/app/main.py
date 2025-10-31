@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from app.services.resumeparser import FileParseError
 from app.core.middleware import global_error_handler
 import logging
+from app.api.v1 import health
 
 app = FastAPI(
     title="HireAssist API",
@@ -34,14 +35,19 @@ app.add_middleware(
 def root():
     return {"message": "HireAssist Backend is running!"}
 
-@app.get("/health")
-async def health():
-    return {"status": "healthy"}
+@app.get("/api/v1/health")
+async def health_check():
+    """Health check endpoint for API status monitoring"""
+    return {
+        "status": "healthy",
+        "message": "API is running"
+    }
 
 # Include API routers
 app.include_router(auth.router, prefix="/api/v1", tags=["authentication"])
 app.include_router(resumes.router, prefix="/api/v1", tags=["resumes"])
 app.include_router(candidates.router, prefix="/api/v1", tags=["candidates"])
+app.include_router(health.router, prefix="/api/v1", tags=["health"])
 
 
 # Small test-only endpoint used by unit tests to verify global error handling
