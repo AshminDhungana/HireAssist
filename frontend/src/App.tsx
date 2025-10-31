@@ -3,45 +3,93 @@ import ResumeUpload from './components/ResumeUpload'
 import ApiStatus from './components/ApiStatus'
 
 const ParserComparisonPage = lazy(() => import('./pages/ParserComparisonPage'))
+const JobMatchingPage = lazy(() => import('./pages/JobMatchingPage'))
+const CandidatesPage = lazy(() => import('./pages/CandidatesPage'))
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'))
+const InTheFuturePage = lazy(() => import('./pages/InTheFuturePage'))
+
+
+type PageType = 'home' | 'comparison' | 'matching' | 'candidates' | 'analytics' | 'future'
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'comparison'>('home')
+  const [currentPage, setCurrentPage] = useState<PageType>('home')
 
   const isHomePage = currentPage === 'home'
   const isComparisonPage = currentPage === 'comparison'
+  const isMatchingPage = currentPage === 'matching'
+  const isCandidatesPage = currentPage === 'candidates'
+  const isAnalyticsPage = currentPage === 'analytics'
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-50 to-white text-gray-800 antialiased">
       {/* Navigation Bar */}
       <nav className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between h-16 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8 gap-3">
           {/* Logo/Title */}
           <h1 className="text-3xl font-black text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text">
             HireAssist
           </h1>
 
           {/* Navigation Buttons */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
             <button
               onClick={() => setCurrentPage('home')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
                 isHomePage ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
               }`}
             >
               <span className="text-lg">📤</span>
-              <span className="hidden sm:inline">Resume Upload</span>
+              <span className="hidden sm:inline">Upload</span>
             </button>
-            
+
             <button
               onClick={() => setCurrentPage('comparison')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 ${
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 ${
                 isComparisonPage ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
               }`}
             >
               <span className="text-lg">📊</span>
-              <span className="hidden sm:inline">Parser Comparison</span>
+              <span className="hidden sm:inline">Compare</span>
             </button>
 
+            <button
+              onClick={() => setCurrentPage('matching')}
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-300 ${
+                isMatchingPage ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              <span className="text-lg">🎯</span>
+              <span className="hidden sm:inline">Matching</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentPage('candidates')}
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-orange-300 ${
+                isCandidatesPage ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              <span className="text-lg">👥</span>
+              <span className="hidden sm:inline">Candidates</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentPage('analytics')}
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-cyan-300 ${
+                isAnalyticsPage ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              <span className="text-lg">📈</span>
+              <span className="hidden sm:inline">Analytics</span>
+            </button>
+            <button
+              onClick={() => setCurrentPage('future')}
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-purple-300 ${
+                currentPage === 'future' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              <span className="text-lg">🚀</span>
+              <span className="hidden sm:inline">Future</span>
+            </button>
             <ApiStatus />
           </div>
         </div>
@@ -53,9 +101,7 @@ export default function App() {
           {/* HOME PAGE: Resume Upload */}
           {isHomePage && (
             <div className="space-y-12 sm:space-y-16">
-              {/* Main Upload Card Section */}
               <section className="overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-gray-200 transition-all duration-300 hover:shadow-3xl">
-                {/* Gradient Header */}
                 <div className="p-8 sm:p-12 text-center text-white bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600">
                   <h2 className="mb-3 text-4xl font-extrabold tracking-tight drop-shadow-md sm:text-5xl">
                     📤 Resume Upload & Parsing
@@ -65,13 +111,11 @@ export default function App() {
                   </p>
                 </div>
 
-                {/* Upload Component Wrapper */}
                 <div className="p-8 sm:p-10 flex justify-center bg-gradient-to-b from-gray-50 to-white">
                   <ResumeUpload />
                 </div>
               </section>
 
-              {/* Feature Cards Grid */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="group p-8 transition-all duration-300 rounded-2xl bg-white shadow-md hover:shadow-xl hover:-translate-y-1 border-t-4 border-blue-600">
                   <div className="mb-3 text-4xl text-blue-600">⚡</div>
@@ -94,19 +138,37 @@ export default function App() {
             </div>
           )}
 
-          {/* COMPARISON PAGE: Lazy Loaded */}
+          {/* COMPARISON PAGE: Parser Comparison */}
           {isComparisonPage && (
-            <Suspense
-              fallback={
-                <div className="flex items-center justify-center min-h-[60vh]">
-                  <div className="text-center">
-                    <div className="w-12 h-12 mx-auto mb-4 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="font-medium text-gray-600">Loading dashboard...</p>
-                  </div>
-                </div>
-              }
-            >
+            <Suspense fallback={<LoadingSpinner />}>
               <ParserComparisonPage />
+            </Suspense>
+          )}
+
+          {/* MATCHING PAGE: Job Matching */}
+          {isMatchingPage && (
+            <Suspense fallback={<LoadingSpinner />}>
+              <JobMatchingPage />
+            </Suspense>
+          )}
+
+          {/* CANDIDATES PAGE */}
+          {isCandidatesPage && (
+            <Suspense fallback={<LoadingSpinner />}>
+              <CandidatesPage />
+            </Suspense>
+          )}
+
+          {/* ANALYTICS PAGE */}
+          {isAnalyticsPage && (
+            <Suspense fallback={<LoadingSpinner />}>
+              <AnalyticsPage />
+            </Suspense>
+          )}
+          {/* FUTURE PAGE */}
+          {currentPage === 'future' && (
+            <Suspense fallback={<LoadingSpinner />}>
+              <InTheFuturePage />
             </Suspense>
           )}
         </div>
@@ -124,6 +186,17 @@ export default function App() {
           <p className="mt-7 text-sm">© {new Date().getFullYear()} HireAssist</p>
         </div>
       </footer>
+    </div>
+  )
+}
+
+function LoadingSpinner() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="text-center">
+        <div className="w-12 h-12 mx-auto mb-4 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="font-medium text-gray-600">Loading page...</p>
+      </div>
     </div>
   )
 }

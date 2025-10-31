@@ -151,7 +151,7 @@ export const ParserComparisonPage: React.FC = () => {
 
         <div className="mt-8 p-6 bg-gradient-to-r from-gray-100 to-gray-200 rounded-lg text-center border border-gray-300">
           <p className="text-gray-700 font-semibold">
-            ✅ Dashboard is working! Task 14 Progress: Parser Comparison Page Complete
+            ✅ Dashboard is working!
           </p>
         </div>
       </div>
