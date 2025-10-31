@@ -1,0 +1,48 @@
+{
+  "programming_languages": [
+    "Python", "JavaScript", "TypeScript", "Java", "C++", "C#", "C",
+    "Go", "Rust", "PHP", "Ruby", "Swift", "Kotlin", "Scala", "Haskell",
+    "Elixir", "Perl", "R", "MATLAB", "Lua", "Groovy", "Clojure", "Erlang"
+  ],
+  "frontend_frameworks": [
+    "React", "Vue.js", "Angular", "Svelte", "Next.js", "Gatsby", "Nuxt.js",
+    "Ember.js", "Backbone.js", "jQuery", "Bootstrap", "Tailwind CSS", "Material-UI",
+    "Ant Design", "Semantic UI", "Foundation", "Bulma", "Chakra UI"
+  ],
+  "backend_frameworks": [
+    "FastAPI", "Django", "Flask", "Node.js", "Express", "Spring", "Spring Boot",
+    "ASP.NET", "ASP.NET Core", "Ruby on Rails", "Sinatra", "Phoenix", "Actix",
+    "Rocket", "Play Framework", "Gin", "Echo", "Fiber"
+  ],
+  "databases": [
+    "PostgreSQL", "MySQL", "MongoDB", "Redis", "Elasticsearch", "Oracle",
+    "SQL Server", "MariaDB", "DynamoDB", "Cassandra", "CouchDB", "Neo4j",
+    "Firebase", "SQLite", "H2", "GraphQL", "Memcached", "Apache HBase"
+  ],
+  "cloud_platforms": [
+    "AWS", "Amazon Web Services", "Google Cloud", "GCP", "Azure", "Microsoft Azure",
+    "DigitalOcean", "Heroku", "IBM Cloud", "Oracle Cloud", "Alibaba Cloud", "Linode",
+    "Vultr", "AWS Lambda", "Google Cloud Run", "Azure Functions"
+  ],
+  "devops_tools": [
+    "Docker", "Kubernetes", "Jenkins", "GitLab CI", "GitHub Actions", "CircleCI",
+    "Travis CI", "Terraform", "Ansible", "Chef", "Puppet", "Vagrant",
+    "Prometheus", "Grafana", "ELK Stack", "Datadog", "New Relic"
+  ],
+  "data_science": [
+    "Machine Learning", "Deep Learning", "TensorFlow", "PyTorch", "Scikit-learn",
+    "Pandas", "NumPy", "Matplotlib", "Seaborn", "XGBoost", "LightGBM",
+    "Natural Language Processing", "NLP", "Computer Vision", "Data Analysis",
+    "Statistical Analysis", "Big Data", "Spark", "Hadoop", "Jupyter Notebook"
+  ],
+  "tools_and_platforms": [
+    "Git", "GitHub", "GitLab", "Bitbucket", "JIRA", "Confluence", "Slack",
+    "Postman", "JUnit", "Selenium", "Maven", "Gradle", "npm", "yarn", "pip",
+    "conda", "Virtual Environment", "Docker Compose", "REST API", "GraphQL"
+  ],
+  "soft_skills": [
+    "Leadership", "Communication", "Problem Solving", "Team Management",
+    "Project Management", "Agile", "Scrum", "Kanban", "Code Review",
+    "Documentation", "Mentoring", "Negotiation", "Presentation", "Teamwork"
+  ]
+}

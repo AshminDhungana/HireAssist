@@ -1,0 +1,147 @@
+{
+  "total_resumes": 1,
+  "timestamp": "2025-10-31 20:17:08",
+  "results": [
+    {
+      "file": "sample_resume.pdf",
+      "parser_a": {
+        "status": "success",
+        "data": {
+          "raw_text": "JOHN DOE\njohn.doe@example.com | (555) 123-4567\nTECHNICAL SKILLS\nLanguages: Python, JavaScript, Java\nFrameworks: React, Django, FastAPI\nDatabases: PostgreSQL, MongoDB, Redis\nCloud: AWS, Docker, Kubernetes\nPROFESSIONAL EXPERIENCE\nSenior Software Engineer - TechCorp\nJanuary 2020 - Present (3+ years)\n- Led development of microservices using FastAPI and Python\n- Deployed applications on AWS using Docker and Kubernetes\n- Built responsive UIs with React and TypeScript\nEDUCATION\nBachelor of Science in Computer Science\nUniversity of Technology (2016-2020)\n",
+          "personal_info": {
+            "name": "JOHN DOE",
+            "email": "john.doe@example.com",
+            "phone": "555) 123-4567",
+            "location": null
+          },
+          "skills": [
+            "Technical Leadership",
+            "Analytical Skills",
+            "Scripting Languages",
+            "Python",
+            "JavaScript",
+            "Java",
+            "React",
+            "Django",
+            "FastAPI",
+            "Graph Databases",
+            "PostgreSQL",
+            "MongoDB",
+            "Redis",
+            "Google Cloud",
+            "AWS",
+            "Docker",
+            "Kubernetes",
+            "Customer Experience",
+            "Accounting Software",
+            "Principal Engineer",
+            "HTTP/3",
+            "Game Development",
+            "Director of Engineering",
+            "Microservices",
+            "Identity and Access Management",
+            "Ruby on Rails",
+            "Responsive Design",
+            "TypeScript",
+            "In-App Messaging",
+            "Computer Vision",
+            "University Partnerships",
+            "Go",
+            "C",
+            "C++",
+            "C#",
+            ".NET",
+            "SQL",
+            "AVA",
+            "ROS",
+            "UI",
+            "R"
+          ],
+          "experience": [],
+          "education": [],
+          "experience_years": 4,
+          "confidence_score": 0.5,
+          "error": null
+        },
+        "time_ms": 30.900001525878906,
+        "metrics": {
+          "skills_count": 41,
+          "experience_years": 4,
+          "experience_entries": 0,
+          "education_entries": 0,
+          "has_email": true,
+          "has_phone": true
+        }
+      },
+      "parser_b": {
+        "status": "success",
+        "data": {
+          "personal_info": {
+            "email": "john.doe@example.com",
+            "phone": "",
+            "name": "JOHN DOE"
+          },
+          "skills": [
+            "AWS",
+            "Django",
+            "Docker",
+            "FastAPI",
+            "Java",
+            "JavaScript",
+            "Kubernetes",
+            "MongoDB",
+            "PostgreSQL",
+            "Python",
+            "React",
+            "Redis",
+            "TypeScript"
+          ],
+          "experience": [
+            {
+              "start_year": "2020",
+              "end_year": "Present",
+              "current": true
+            },
+            {
+              "start_year": "2016",
+              "end_year": "2020",
+              "current": false
+            }
+          ],
+          "education": [
+            {
+              "degree": "Bachelor of Science",
+              "field": "Science"
+            }
+          ],
+          "experience_years": 7.0
+        },
+        "time_ms": 57.15775489807129,
+        "metrics": {
+          "skills_count": 13,
+          "experience_years": 7.0,
+          "experience_entries": 2,
+          "education_entries": 1,
+          "has_email": true,
+          "has_phone": false
+        }
+      }
+    }
+  ],
+  "summary": {
+    "parser_a": {
+      "name": "Parser A (NLP-based)",
+      "success": 1,
+      "errors": 0,
+      "avg_time_ms": 30.900001525878906,
+      "avg_skills": 41.0
+    },
+    "parser_b": {
+      "name": "Parser B (Regex-based)",
+      "success": 1,
+      "errors": 0,
+      "avg_time_ms": 57.15775489807129,
+      "avg_skills": 13.0
+    }
+  }
+}
