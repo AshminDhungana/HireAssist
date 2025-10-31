@@ -4,7 +4,11 @@
 
 This system is a **comprehensive, production-ready Resume/CV Screening and Parsing System** built with modern technologies including **React**, **Tailwind CSS**, **Python FastAPI**, **RAG (Retrieval-Augmented Generation)**, and **LangChain**. The system leverages advanced AI techniques to automate resume screening, candidate ranking, and intelligent job matching.
 
-**Status**: ✅ Tasks 14 & 15 Complete - Dashboard & CI/CD Live
+**Status**: ✅ Working On It Please Wait ...
+
+### Dashboard Interface
+![HireAssist Dashboard](docs/images/dashboard.png)
+
 
 ## 🚀 Key Features
 
@@ -14,6 +18,7 @@ This system is a **comprehensive, production-ready Resume/CV Screening and Parsi
 - ✅ **Parser Performance Dashboard**: Real-time comparison of parsing accuracy and speed
 - ✅ **Interactive Dashboard**: Modern React interface with real-time updates
 - ✅ **API Status Monitoring**: Real-time health check indicator
+- ✅ **Docker Support**: Complete containerization for development and production
 - **Semantic Job Matching**: RAG-powered similarity search between resumes and job descriptions
 - **Real-time Candidate Ranking**: Score and rank candidates using vector embeddings
 - **Intelligent Screening**: Multi-criteria evaluation with customizable scoring algorithms
@@ -60,11 +65,11 @@ This system is a **comprehensive, production-ready Resume/CV Screening and Parsi
 
 ### DevOps & Infrastructure
 - **Docker** containerization
-- **Docker Compose** for development
+- **Docker Compose** for development and production
 - **GitHub Actions** CI/CD
 - **Nginx** reverse proxy
+- **PostgreSQL + Redis** with Docker
 - **AWS/GCP** cloud deployment ready
-- **Prometheus/Grafana** monitoring (planned)
 
 ## 📁 Project Structure
 
@@ -72,81 +77,218 @@ This system is a **comprehensive, production-ready Resume/CV Screening and Parsi
 HireAssist/
 ├── frontend/                          # React Application
 │   ├── src/
+│   │   ├── __tests__/
+│   │   │   └── App.test.tsx
 │   │   ├── api/
 │   │   │   └── resumeService.ts      # API service functions
 │   │   ├── components/
-│   │   │   ├── ResumeUpload.jsx      # Resume upload component
 │   │   │   ├── ApiStatus.tsx         # API health indicator
+│   │   │   ├── ResumeUpload.jsx      # Resume upload component
 │   │   │   └── ParserComparison/     # Parser comparison dashboard
 │   │   │       ├── ComparisonCard.tsx
-│   │   │       ├── PerformanceChart.tsx
 │   │   │       ├── ComparisonTable.tsx
 │   │   │       ├── ParserComparisonDashboard.tsx
+│   │   │       ├── PerformanceChart.tsx
 │   │   │       └── index.ts
+│   │   ├── hooks/
+│   │   │   ├── useApiStatus.ts
+│   │   │   └── useParserComparison.ts
 │   │   ├── pages/
 │   │   │   └── ParserComparisonPage.tsx
-│   │   ├── hooks/
-│   │   │   ├── useParserComparison.ts
-│   │   │   └── useApiStatus.ts
 │   │   ├── types/
 │   │   │   └── parser.ts
+│   │   ├── App.css
 │   │   ├── App.tsx
 │   │   ├── index.css
 │   │   └── main.tsx
-│   ├── __tests__/
-│   │   └── App.test.tsx
+│   ├── .dockerignore
+│   ├── .env.example
+│   ├── Dockerfile
+│   ├── index.html
+│   ├── package-lock.json
 │   ├── package.json
 │   ├── tailwind.config.js
-│   ├── vitest.config.ts
-│   └── vite.config.ts
+│   ├── tsconfig.json
+│   ├── vite.config.ts
+│   └── vitest.config.ts
 ├── backend/                           # FastAPI Application
 │   ├── app/
-│   │   ├── main.py                   # Entry point
 │   │   ├── api/
-│   │   │   ├── v1/
-│   │   │   │   ├── auth.py
-│   │   │   │   ├── resumes.py
-│   │   │   │   ├── jobs.py
-│   │   │   │   └── analytics.py
+│   │   │   ├── __init__.py
+│   │   │   └── v1/
+│   │   │       ├── __init__.py
+│   │   │       ├── auth.py
+│   │   │       ├── jobs.py
+│   │   │       ├── resumes.py
+│   │   │       ├── screening.py
+│   │   │       └── analytics.py
 │   │   ├── core/
-│   │   │   ├── config.py
-│   │   │   ├── security.py
-│   │   │   └── database.py
-│   │   ├── models/                  # SQLAlchemy models
-│   │   ├── schemas/                 # Pydantic schemas
-│   │   ├── services/                # Business logic
-│   │   │   ├── resume_parser.py
-│   │   │   ├── parser_nlp.py        # NLP parser (Parser A)
-│   │   │   ├── parser_regex.py      # Regex parser (Parser B)
-│   │   │   ├── rag_engine.py
+│   │   │   ├── __init__.py
+│   │   │   ├── config.py             # Settings from environment
+│   │   │   ├── database.py
+│   │   │   └── security.py
+│   │   ├── models/
+│   │   │   ├── __init__.py
+│   │   │   ├── base.py               # Base model class
+│   │   │   ├── candidate.py
+│   │   │   ├── job.py
+│   │   │   ├── organization.py
+│   │   │   ├── resume.py
+│   │   │   ├── screening.py
+│   │   │   └── user.py
+│   │   ├── schemas/
+│   │   │   ├── __init__.py
+│   │   │   └── parser.py
+│   │   ├── services/
+│   │   │   ├── __init__.py
+│   │   │   ├── ai_service.py
 │   │   │   ├── matching_service.py
-│   │   │   └── ai_service.py
+│   │   │   ├── parser_nlp.py         # NLP parser (Parser A)
+│   │   │   ├── parser_regex.py       # Regex parser (Parser B)
+│   │   │   ├── rag_engine.py
+│   │   │   ├── resume_parser.py
+│   │   │   └── screening_service.py
 │   │   ├── utils/
-│   │   └── dependencies.py
+│   │   │   ├── __init__.py
+│   │   │   └── validators.py
+│   │   ├── __init__.py
+│   │   ├── dependencies.py
+│   │   └── main.py                   # Entry point
+│   ├── migrations/                   # Database migrations
+│   │   ├── env.py                    # Auto-reads from .env
+│   │   ├── script.py.mako
+│   │   └── versions/
 │   ├── tests/
 │   │   ├── __init__.py
-│   │   └── test_health.py
-│   ├── alembic/                     # Database migrations
-│   ├── requirements.txt              # Cleaned dependencies
+│   │   ├── test_health.py
+│   │   ├── test_parsers.py
+│   │   └── test_screening.py
+│   ├── .dockerignore
 │   ├── .env.example
-│   └── Dockerfile
-├── ai-services/                      # AI/ML microservices
-│   ├── resume-parser/
-│   ├── rag-engine/
-│   └── vector-db/
-├── infrastructure/                   # Infrastructure as Code
-│   ├── docker/
-│   ├── kubernetes/
-│   └── terraform/
+│   ├── Dockerfile
+│   ├── alembic.ini                   # Alembic configuration (at backend root)
+│   └── requirements.txt               # Cleaned Python dependencies
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                   # GitHub Actions CI/CD
+├── .env.example                      # Root environment template (Docker)
+├── .gitignore
+├── docker-compose.prod.yml           # Production setup with Nginx
+├── docker-compose.yml                # Development setup
+├── nginx.conf                        # Nginx reverse proxy config
 ├── docs/                            # Documentation
 ├── scripts/                         # Deployment scripts
-├── docker-compose.yml
-├── docker-compose.prod.yml
 └── README.md
 ```
+
+## 🐳 Docker Setup
+
+### Prerequisites
+- Install [Docker](https://www.docker.com/products/docker-desktop)
+- Install [Docker Compose](https://docs.docker.com/compose/install/)
+
+### Quick Start - Docker Development
+
+```bash
+# 1. Clone repository
+git clone https://github.com/AshminDhungana/HireAssist.git
+cd HireAssist
+
+# 2. Create .env file from template
+cp .env.example .env
+
+# 3. Start all services (PostgreSQL, Redis, Backend, Frontend)
+docker-compose up -d
+
+# 4. Wait for services to start (30 seconds)
+sleep 30
+
+# 5. Run database migrations
+docker-compose exec backend alembic upgrade head
+
+# 6. Access applications
+# Frontend: http://localhost:3000
+# Backend: http://localhost:8000
+# API Docs: http://localhost:8000/docs
+
+# 7. View logs
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+# 8. Stop services
+docker-compose down
+```
+
+### Environment Variables Configuration
+
+#### Root `.env` (docker-compose.yml reads this)
+```env
+# Database
+DB_USER=hireassist
+DB_PASSWORD=hireassist_dev_password
+DB_NAME=hireassist_db
+DATABASE_URL=postgresql://hireassist:hireassist_dev_password@postgres:5432/hireassist_db
+
+# Redis
+REDIS_URL=redis://redis:6379
+
+# Security
+SECRET_KEY=dev_secret_key_change_in_production
+
+# API URLs
+FRONTEND_API_URL=http://localhost:3000
+
+# Debug
+DEBUG=true
+```
+
+#### Backend `backend/.env` (local development)
+```env
+DATABASE_URL=postgresql://hireassist:hireassist_dev_password@localhost:5432/hireassist_db
+REDIS_URL=redis://localhost:6379
+SECRET_KEY=dev_secret_key_change_in_production
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+UPLOAD_FOLDER=./uploads
+MAX_FILE_SIZE=10485760
+OPENAI_API_KEY=
+DEBUG=true
+```
+
+#### Frontend `frontend/.env.local` (local development)
+```env
+VITE_API_BASE_URL=http://localhost:8000
+VITE_APP_NAME=HireAssist
+VITE_DEBUG=true
+```
+
+### Database Migrations with Alembic
+
+**Key Point**: Alembic configuration (`alembic.ini`) is at `backend/alembic.ini` (backend root level)
+
+**Automatic Configuration**: `migrations/env.py` reads database URL from `.env` automatically!
+
+```bash
+# Create new migration (auto-detects schema changes)
+docker-compose exec backend alembic revision --autogenerate -m "Add users table"
+
+# Apply migrations
+docker-compose exec backend alembic upgrade head
+
+# Rollback one migration
+docker-compose exec backend alembic downgrade -1
+
+# View current revision
+docker-compose exec backend alembic current
+
+# View migration history
+docker-compose exec backend alembic history
+```
+
+**How it works:**
+1. `migrations/env.py` reads `DATABASE_URL` from `.env`
+2. Configuration is automatic - no manual editing needed
+3. Works seamlessly in Docker and local development
 
 ## 🗄 Database Schema
 
@@ -181,7 +323,7 @@ CREATE TABLE jobs (
     location VARCHAR(255),
     salary_range INT4RANGE,
     status VARCHAR(50) DEFAULT 'active',
-    embedding VECTOR(1536), -- OpenAI embedding
+    embedding VECTOR(1536),
     created_by UUID REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -203,7 +345,7 @@ CREATE TABLE resumes (
     candidate_id UUID REFERENCES candidates(id),
     filename VARCHAR(255) NOT NULL,
     file_path VARCHAR(500) NOT NULL,
-    parsed_data JSONB, -- Structured resume data
+    parsed_data JSONB,
     raw_text TEXT,
     embedding VECTOR(1536),
     skills TEXT[],
@@ -212,7 +354,7 @@ CREATE TABLE resumes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Job Applications and Screening Results
+-- Job Applications
 CREATE TABLE applications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     job_id UUID REFERENCES jobs(id),
@@ -222,6 +364,7 @@ CREATE TABLE applications (
     applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Screening Results
 CREATE TABLE screening_results (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     application_id UUID REFERENCES applications(id),
@@ -234,98 +377,13 @@ CREATE TABLE screening_results (
 );
 ```
 
-**Note:**  
-> This schema requires PostgreSQL with the `pgvector` extension enabled for embedding/vector operations.  
-> Initialize your database and apply Alembic migrations to create these tables automatically.
-
-## 🤖 AI Architecture
-
-### RAG Pipeline Architecture
-```
-1. Document Ingestion
-   ├── Resume Upload (PDF/DOCX)
-   ├── Text Extraction (PyPDF2, python-docx)
-   └── Text Preprocessing
-
-2. Information Extraction
-   ├── Named Entity Recognition (spaCy)
-   ├── Skill Extraction (Custom NER Model)
-   └── Structured Data Generation
-
-3. Vector Embedding
-   ├── Text Chunking (LangChain)
-   ├── Embedding Generation (OpenAI/Sentence-BERT)
-   └── Vector Storage (Pinecone/Qdrant)
-
-4. Retrieval & Ranking
-   ├── Semantic Search
-   ├── Hybrid Search (Dense + Sparse)
-   ├── Re-ranking Algorithm
-   └── Score Calculation
-
-5. Generation & Response
-   ├── Context Augmentation
-   ├── LLM-based Analysis
-   └── Structured Output
-```
-
-### Matching Algorithm
-```python
-class CandidateMatchingService:
-    def calculate_match_score(self, resume_data, job_requirements):
-        """
-        Multi-dimensional matching algorithm
-        """
-        scores = {
-            'skill_match': self._calculate_skill_similarity(resume_data, job_requirements),
-            'experience_match': self._calculate_experience_score(resume_data, job_requirements),
-            'education_match': self._calculate_education_score(resume_data, job_requirements),
-            'semantic_similarity': self._calculate_semantic_similarity(resume_data, job_requirements)
-        }
-        
-        # Weighted scoring
-        weights = {'skill_match': 0.4, 'experience_match': 0.3, 
-                  'education_match': 0.2, 'semantic_similarity': 0.1}
-        
-        overall_score = sum(scores[key] * weights[key] for key in scores)
-        return overall_score, scores
-```
-
-## 🔐 Authentication & Security
-
-### JWT Implementation
-```python
-# Security configuration
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-REFRESH_TOKEN_EXPIRE_DAYS = 30
-
-# Role-based access control
-class RoleChecker:
-    def __init__(self, allowed_roles: List[str]):
-        self.allowed_roles = allowed_roles
-    
-    def __call__(self, current_user: User = Depends(get_current_user)):
-        if current_user.role not in self.allowed_roles:
-            raise HTTPException(status_code=403, detail="Insufficient permissions")
-        return current_user
-
-# Usage in routes
-@router.post("/jobs", dependencies=[Depends(RoleChecker(["admin", "recruiter"]))])
-async def create_job(job_data: JobCreate, current_user: User):
-    # Job creation logic
-    pass
-```
+**Note:** This schema requires PostgreSQL with the `pgvector` extension enabled.
 
 ## 🚀 Deployment Guide
 
-### Development Setup
-```bash
-# Clone repository
-git clone https://github.com/AshminDhungana/HireAssist.git
-cd HireAssist
+### Local Development (Without Docker)
 
+```bash
 # Backend setup
 cd backend
 python -m venv venv
@@ -335,9 +393,11 @@ pip install -r requirements.txt
 # Download spaCy model
 python -m spacy download en_core_web_sm
 
-# Environment variables
+# Create .env
 cp .env.example .env
-# Edit .env with your configuration
+
+# Run migrations
+alembic upgrade head
 
 # Start backend
 uvicorn app.main:app --reload
@@ -345,45 +405,32 @@ uvicorn app.main:app --reload
 # Frontend setup (new terminal)
 cd frontend
 npm install
+cp .env.example .env.local
 npm run dev
+```
 
-# Start with Docker Compose
+### Docker Development
+
+```bash
+# Start all services
 docker-compose up -d
+
+# Run migrations
+docker-compose exec backend alembic upgrade head
+
+# Stop services
+docker-compose down
 ```
 
 ### Production Deployment
+
 ```bash
+# Create production .env
+cp .env.example .env
+# Edit .env with production values
+
 # Build and deploy
 docker-compose -f docker-compose.prod.yml up -d
-
-# With Kubernetes
-kubectl apply -f infrastructure/kubernetes/
-```
-
-### Environment Variables
-```env
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/resume_screening
-REDIS_URL=redis://localhost:6379
-
-# AI Services
-OPENAI_API_KEY=your_openai_api_key
-PINECONE_API_KEY=your_pinecone_api_key
-PINECONE_ENVIRONMENT=us-west1-gcp
-
-# Authentication
-SECRET_KEY=your_secret_key_here
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# File Storage
-UPLOAD_FOLDER=./uploads
-MAX_FILE_SIZE=10485760  # 10MB
-
-# Email (for notifications)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASSWORD=your_app_password
 ```
 
 ## 📊 API Documentation
@@ -396,143 +443,50 @@ Response: { "status": "healthy", "message": "API is running" }
 
 ### Authentication Endpoints
 ```
-POST /api/v1/auth/login      # User login
-POST /api/v1/auth/register   # User registration
-POST /api/v1/auth/refresh    # Refresh token
-POST /api/v1/auth/logout     # Logout user
+POST /api/v1/auth/login
+POST /api/v1/auth/register
+POST /api/v1/auth/refresh
+POST /api/v1/auth/logout
 ```
 
 ### Resume Management
 ```
-POST /api/v1/resumes/upload     # Upload resume
-GET  /api/v1/resumes/{id}       # Get resume details
-PUT  /api/v1/resumes/{id}       # Update resume
-DELETE /api/v1/resumes/{id}     # Delete resume
-GET  /api/v1/resumes/parse/{id} # Parse resume content
+POST /api/v1/resumes/upload
+GET  /api/v1/resumes/{id}
+PUT  /api/v1/resumes/{id}
+DELETE /api/v1/resumes/{id}
 ```
 
 ### Job Management
 ```
-POST /api/v1/jobs           # Create job posting
-GET  /api/v1/jobs           # List jobs
-GET  /api/v1/jobs/{id}      # Get job details
-PUT  /api/v1/jobs/{id}      # Update job
-DELETE /api/v1/jobs/{id}    # Delete job
+POST /api/v1/jobs
+GET  /api/v1/jobs
+GET  /api/v1/jobs/{id}
+PUT  /api/v1/jobs/{id}
+DELETE /api/v1/jobs/{id}
 ```
 
 ### Screening & Matching
 ```
-POST /api/v1/screening/match     # Match resumes to job
-GET  /api/v1/screening/results   # Get screening results
-POST /api/v1/screening/bulk      # Bulk screening
-GET  /api/v1/screening/analytics # Screening analytics
+POST /api/v1/screening/match
+GET  /api/v1/screening/results
+POST /api/v1/screening/bulk
 ```
 
-## 🧪 Testing Strategy
+## 🧪 Testing
 
 ### Backend Testing
-```python
-# Test structure
-tests/
-├── unit/              # Unit tests
-├── integration/       # Integration tests
-├── fixtures/         # Test data fixtures
-└── conftest.py       # Pytest configuration
-
-# Example test
-@pytest.mark.asyncio
-async def test_resume_parsing():
-    async with AsyncClient(app=app, base_url="http://test") as client:
-        response = await client.post(
-            "/api/v1/resumes/upload",
-            files={"file": ("test_resume.pdf", file_content, "application/pdf")}
-        )
-        assert response.status_code == 201
-        assert "parsed_data" in response.json()
+```bash
+docker-compose exec backend pytest tests/ -v
 ```
 
 ### Frontend Testing
-```typescript
-// Component testing with React Testing Library
-import { render, screen } from '@testing-library/react';
-import { ResumeUpload } from './ResumeUpload';
-
-test('renders resume upload component', () => {
-  render(<ResumeUpload />);
-  expect(screen.getByText(/upload resume/i)).toBeInTheDocument();
-});
-```
-
-## 🔧 Performance Optimization
-
-### Caching Strategy
-```python
-# Redis caching
-@cache(expire=3600)  # 1 hour cache
-async def get_job_matches(job_id: str, limit: int = 50):
-    # Expensive matching operation
-    return await matching_service.find_candidates(job_id, limit)
-```
-
-### Database Optimization
-```sql
--- Indexes for performance
-CREATE INDEX idx_resumes_skills ON resumes USING GIN(skills);
-CREATE INDEX idx_resumes_embedding ON resumes USING ivfflat (embedding vector_cosine_ops);
-CREATE INDEX idx_jobs_created_at ON jobs(created_at);
-```
-
-## 📈 Monitoring & Analytics
-
-### Metrics Collection
-```python
-# Prometheus metrics
-from prometheus_client import Counter, Histogram
-
-resume_uploads = Counter('resume_uploads_total', 'Total resume uploads')
-screening_duration = Histogram('screening_duration_seconds', 'Time spent screening')
-
-@router.post("/resumes/upload")
-async def upload_resume():
-    resume_uploads.inc()
-    with screening_duration.time():
-        # Processing logic
-        pass
-```
-
-### Health Checks
-```python
-@router.get("/health")
-async def health_check():
-    return {
-        "status": "healthy",
-        "database": await check_database_connection(),
-        "redis": await check_redis_connection(),
-        "vector_db": await check_vector_db_connection()
-    }
+```bash
+cd frontend
+npm test
 ```
 
 ## ✨ Current Implementation Status
-
-### ✅ Completed (Tasks 14 & 15)
-
-#### Task 14: React Dashboard
-- ✅ Parser comparison page with metrics
-- ✅ Side-by-side comparison cards (Parser A vs B)
-- ✅ Performance visualization with Chart.js
-- ✅ Detailed comparison table
-- ✅ Professional Tailwind CSS styling
-- ✅ Responsive mobile design
-- ✅ API status indicator badge
-- ✅ Full TypeScript type safety
-
-#### Task 15: CI/CD Pipeline
-- ✅ GitHub Actions workflow (`.github/workflows/ci.yml`)
-- ✅ Backend automated testing (pytest)
-- ✅ Frontend build verification (Vite)
-- ✅ Code quality checks
-- ✅ Runs on push to main branch
-- ✅ Blocks merge if tests fail
 
 ### 📋 In Progress
 - Resume parsing API endpoints
@@ -556,7 +510,7 @@ async def health_check():
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🙏 Acknowledgments
 
@@ -565,11 +519,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - FastAPI for the excellent web framework
 - React team for the frontend framework
 - spaCy for NLP capabilities
+- Docker for containerization
 
 ---
 
 **Built with ❤️ for modern recruitment workflows**
 
-**Current Version**: 1.0.0 (Tasks 14-15 Complete)  
+**Current Version**: 1.0.0 (Tasks 14-16 Complete)  
 **Last Updated**: October 31, 2025  
 **Status**: 🟢 Development Active

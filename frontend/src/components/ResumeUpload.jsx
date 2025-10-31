@@ -9,6 +9,7 @@ function ResumeUpload() {
   const [messageType, setMessageType] = useState('');
   const [isDragging, setIsDragging] = useState(false);
 
+  // --- Handlers remain the same ---
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
@@ -57,9 +58,11 @@ function ResumeUpload() {
       setIsLoading(false);
     }
   };
+  // --- End Handlers ---
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    // Standardized max-w 
+    <div className="w-full">
       {/* Drop Zone */}
       <div
         onDrop={handleDrop}
@@ -68,36 +71,36 @@ function ResumeUpload() {
           setIsDragging(true);
         }}
         onDragLeave={() => setIsDragging(false)}
-        className={`relative border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 ${
+        className={`relative border-2 border-dashed rounded-xl p-10 sm:p-16 text-center transition-all duration-300 shadow-inner ${ // Added shadow-inner for depth
           isDragging
-            ? 'border-blue-500 bg-blue-50 shadow-lg scale-105'
+            ? 'border-blue-600 bg-blue-50 shadow-blue-200 shadow-xl' // Stronger focus style
             : file
-            ? 'border-green-400 bg-green-50'
-            : 'border-gray-300 hover:border-blue-500 bg-gray-50'
+            ? 'border-green-500 bg-white shadow-green-100 shadow-md' // File selected style
+            : 'border-gray-300 hover:border-blue-500 bg-gray-50' // Default style
         }`}
       >
         {/* Upload Icon */}
         <div className="flex justify-center mb-4">
           {file ? (
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center border-4 border-green-200">
               <Check className="w-8 h-8 text-green-600" />
             </div>
           ) : (
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center animate-bounce">
+            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center border-4 border-blue-200 animate-pulse"> 
               <Upload className="w-8 h-8 text-blue-600" />
             </div>
           )}
         </div>
 
         {/* Text */}
-        <p className="text-xl font-semibold text-gray-900 mb-2">
-          {file ? '📄 File Selected' : '📁 Drag & Drop Your Resume'}
+        <p className="text-xl font-extrabold text-gray-900 mb-2">
+          {file ? '📄 File Ready for Parsing' : '📁 Drag & Drop Your Resume'}
         </p>
-        <p className="text-sm text-gray-600 mb-6">
-          {file ? file.name : 'or click below to browse'}
+        <p className="text-base text-gray-500 mb-6">
+          {file ? `Selected: ${file.name}` : 'or click the button below to browse'}
         </p>
 
-        {/* File Input */}
+        {/* File Input/Select Button */}
         <label className="inline-block">
           <input
             type="file"
@@ -105,22 +108,10 @@ function ResumeUpload() {
             accept=".pdf,.docx"
             className="hidden"
           />
-          <span className="inline-block px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg cursor-pointer hover:shadow-lg hover:scale-105 transition-all">
-            Select File
+          <span className="inline-block px-8 py-3 bg-white text-blue-600 border border-blue-600 font-bold rounded-lg cursor-pointer hover:bg-blue-50 transition-all shadow-md">
+            {file ? 'Change File' : 'Select File'}
           </span>
         </label>
-
-        {/* File Info */}
-        {file && (
-          <div className="mt-6 p-4 bg-white rounded-lg border border-green-200 inline-block">
-            <p className="text-sm text-gray-700">
-              <span className="font-semibold">File:</span> {file.name}
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              Size: {(file.size / 1024 / 1024).toFixed(2)} MB
-            </p>
-          </div>
-        )}
 
         {/* Info Text */}
         <p className="text-xs text-gray-500 mt-6">
@@ -133,16 +124,17 @@ function ResumeUpload() {
         <button
           onClick={handleSubmit}
           disabled={!file || isLoading}
-          className={`w-full py-4 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2 ${
+          // Updated gradient for a more distinct 'action' color, consistent with App.jsx
+          className={`w-full py-4 rounded-xl font-extrabold text-lg transition-all shadow-xl flex items-center justify-center gap-2 ${
             !file || isLoading
-              ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-              : 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:shadow-xl hover:scale-105'
+              ? 'bg-gray-200 text-gray-500 cursor-not-allowed shadow-none'
+              : 'bg-gradient-to-r from-green-500 to-teal-600 text-white hover:shadow-2xl hover:scale-[1.01]' // Strong, inviting action color
           }`}
         >
           {isLoading ? (
             <>
               <Loader className="w-5 h-5 animate-spin" />
-              Uploading & Parsing...
+              Processing...
             </>
           ) : (
             <>
@@ -154,54 +146,29 @@ function ResumeUpload() {
       </div>
 
       {/* Messages */}
+      {/* Refined message box styling */}
       {message && (
         <div
-          className={`mt-8 p-6 rounded-lg flex items-center gap-3 animate-in fade-in ${
+          className={`mt-6 p-4 rounded-lg flex items-center gap-3 animate-in fade-in transition-all duration-500 ${
             messageType === 'success'
-              ? 'bg-green-50 border border-green-300'
-              : messageType === 'error'
-              ? 'bg-red-50 border border-red-300'
-              : 'bg-blue-50 border border-blue-300'
+              ? 'bg-green-100 border border-green-400'
+              : 'bg-red-100 border border-red-400'
           }`}
         >
-          {messageType === 'success' && (
+          {messageType === 'success' ? (
             <Check className="w-6 h-6 text-green-600 flex-shrink-0" />
-          )}
-          {messageType === 'error' && (
+          ) : (
             <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0" />
           )}
           <p
-            className={`font-medium ${
-              messageType === 'success'
-                ? 'text-green-800'
-                : messageType === 'error'
-                ? 'text-red-800'
-                : 'text-blue-800'
+            className={`font-semibold ${
+              messageType === 'success' ? 'text-green-800' : 'text-red-800'
             }`}
           >
             {message}
           </p>
         </div>
       )}
-
-      {/* Features */}
-      <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 bg-white rounded-lg shadow-md border-l-4 border-blue-600">
-          <div className="text-2xl font-bold text-blue-600 mb-2">⚡</div>
-          <p className="font-semibold text-gray-900">Fast Parsing</p>
-          <p className="text-sm text-gray-600 mt-1">Process resumes in seconds</p>
-        </div>
-        <div className="p-6 bg-white rounded-lg shadow-md border-l-4 border-purple-600">
-          <div className="text-2xl font-bold text-purple-600 mb-2">🎯</div>
-          <p className="font-semibold text-gray-900">Accurate Extraction</p>
-          <p className="text-sm text-gray-600 mt-1">Extract skills, experience & more</p>
-        </div>
-        <div className="p-6 bg-white rounded-lg shadow-md border-l-4 border-green-600">
-          <div className="text-2xl font-bold text-green-600 mb-2">🔒</div>
-          <p className="font-semibold text-gray-900">Secure & Private</p>
-          <p className="text-sm text-gray-600 mt-1">Your data is safe with us</p>
-        </div>
-      </div>
     </div>
   );
 }
