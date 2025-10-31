@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Card, Select, Button, Badge } from '../components/ui'
-import { LineChart, BarChart, PieChart } from '../components/charts'
+import { LineChart, BarChart } from '../components/charts'
 
 interface AnalyticsData {
   totalJobs: number

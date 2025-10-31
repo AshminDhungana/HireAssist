@@ -11,7 +11,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { ParserMetrics } from '../../types/parser';
+import type { ParserMetrics } from '../../types/parser';
 
 ChartJS.register(
   CategoryScale,
@@ -77,7 +77,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
       },
       title: {
         display: true,
-        font: { size: 14, weight: 'bold' },
+        font: { size: 14, weight: 'bold' as const },  // ✅ FIXED: Add 'as const'
       },
     },
     scales: {
@@ -85,7 +85,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({
         beginAtZero: true,
       },
     },
-  };
+  } as const;  // ✅ FIXED: Add 'as const' at the end
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

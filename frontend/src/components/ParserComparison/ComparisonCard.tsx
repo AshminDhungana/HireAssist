@@ -1,5 +1,5 @@
 import React from 'react';
-import { ParserMetrics } from '../../types/parser';
+import type { ParserMetrics } from '../../types/parser';
 
 interface ComparisonCardProps {
   metrics: ParserMetrics;

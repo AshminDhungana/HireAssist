@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
+
+import { useState } from 'react';
 import { uploadResume } from '../api/resumeService';
 import { Upload, Check, AlertCircle, Loader } from 'lucide-react';
 
 function ResumeUpload() {
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [messageType, setMessageType] = useState('');
+  const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
   const [isDragging, setIsDragging] = useState(false);
 
-  // --- Handlers remain the same ---
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
+  // Handle file selection from input
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
       setMessage('');
@@ -19,11 +20,12 @@ function ResumeUpload() {
     }
   };
 
-  const handleDrop = (e) => {
+  // Handle drag and drop
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    const droppedFile = e.dataTransfer.files[0];
+    const droppedFile = e.dataTransfer.files?.[0];
     if (droppedFile) {
       setFile(droppedFile);
       setMessage('');
@@ -31,6 +33,18 @@ function ResumeUpload() {
     }
   };
 
+  // Handle drag over
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  // Handle drag leave
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  // Submit resume for upload and parsing
   const handleSubmit = async () => {
     if (!file) {
       setMessage('❌ Please select a file first');
@@ -44,39 +58,45 @@ function ResumeUpload() {
 
     try {
       const data = await uploadResume(file);
-      setMessage(data.message || '✅ Resume uploaded successfully!');
-      setMessageType('success');
-      setFile(null);
-      setTimeout(() => {
-        setMessage('');
-        setMessageType('');
-      }, 5000);
+      
+      if (data.success) {
+        setMessage(data.message || '✅ Resume uploaded successfully!');
+        setMessageType('success');
+        setFile(null);
+        
+        // Auto-clear message after 5 seconds
+        setTimeout(() => {
+          setMessage('');
+          setMessageType('');
+        }, 5000);
+      } else {
+        setMessage(`❌ ${data.error || 'Upload failed'}`);
+        setMessageType('error');
+      }
     } catch (err) {
-      setMessage(err.message || '❌ Upload failed. Please try again.');
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : 'Upload failed. Please try again.';
+      setMessage(`❌ ${errorMessage}`);
       setMessageType('error');
     } finally {
       setIsLoading(false);
     }
   };
-  // --- End Handlers ---
 
   return (
-    // Standardized max-w 
     <div className="w-full">
       {/* Drop Zone */}
       <div
         onDrop={handleDrop}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setIsDragging(true);
-        }}
-        onDragLeave={() => setIsDragging(false)}
-        className={`relative border-2 border-dashed rounded-xl p-10 sm:p-16 text-center transition-all duration-300 shadow-inner ${ // Added shadow-inner for depth
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        className={`relative border-2 border-dashed rounded-xl p-10 sm:p-16 text-center transition-all duration-300 shadow-inner ${
           isDragging
-            ? 'border-blue-600 bg-blue-50 shadow-blue-200 shadow-xl' // Stronger focus style
+            ? 'border-blue-600 bg-blue-50 shadow-blue-200 shadow-xl'
             : file
-            ? 'border-green-500 bg-white shadow-green-100 shadow-md' // File selected style
-            : 'border-gray-300 hover:border-blue-500 bg-gray-50' // Default style
+            ? 'border-green-500 bg-white shadow-green-100 shadow-md'
+            : 'border-gray-300 hover:border-blue-500 bg-gray-50'
         }`}
       >
         {/* Upload Icon */}
@@ -86,7 +106,7 @@ function ResumeUpload() {
               <Check className="w-8 h-8 text-green-600" />
             </div>
           ) : (
-            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center border-4 border-blue-200 animate-pulse"> 
+            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center border-4 border-blue-200 animate-pulse">
               <Upload className="w-8 h-8 text-blue-600" />
             </div>
           )}
@@ -105,7 +125,7 @@ function ResumeUpload() {
           <input
             type="file"
             onChange={handleFileChange}
-            accept=".pdf,.docx"
+            accept=".pdf,.docx,.doc"
             className="hidden"
           />
           <span className="inline-block px-8 py-3 bg-white text-blue-600 border border-blue-600 font-bold rounded-lg cursor-pointer hover:bg-blue-50 transition-all shadow-md">
@@ -124,11 +144,10 @@ function ResumeUpload() {
         <button
           onClick={handleSubmit}
           disabled={!file || isLoading}
-          // Updated gradient for a more distinct 'action' color, consistent with App.jsx
           className={`w-full py-4 rounded-xl font-extrabold text-lg transition-all shadow-xl flex items-center justify-center gap-2 ${
             !file || isLoading
               ? 'bg-gray-200 text-gray-500 cursor-not-allowed shadow-none'
-              : 'bg-gradient-to-r from-green-500 to-teal-600 text-white hover:shadow-2xl hover:scale-[1.01]' // Strong, inviting action color
+              : 'bg-gradient-to-r from-green-500 to-teal-600 text-white hover:shadow-2xl hover:scale-[1.01]'
           }`}
         >
           {isLoading ? (
@@ -146,7 +165,6 @@ function ResumeUpload() {
       </div>
 
       {/* Messages */}
-      {/* Refined message box styling */}
       {message && (
         <div
           className={`mt-6 p-4 rounded-lg flex items-center gap-3 animate-in fade-in transition-all duration-500 ${

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Input, Select, Card, Table, Modal, Badge } from '../components/ui'
+import { Button, Input, Select, Card, Modal, Badge } from '../components/ui'
 
 interface Candidate {
   id: string
@@ -91,11 +91,11 @@ export default function CandidatesPage() {
     { key: 'status', label: 'Status' },
   ]
 
-  const tableData = filteredCandidates.map((c) => ({
-    ...c,
-    appliedJobs: c.appliedJobs,
-    status: <Badge variant={statusColors[c.status]}>{c.status}</Badge>,
-  }))
+  //const tableData = filteredCandidates.map((c) => ({
+  // ...c,
+  // appliedJobs: c.appliedJobs,
+  //  status: <Badge variant={statusColors[c.status]}>{c.status}</Badge>,
+  //}))
 
   const handleSelectCandidate = (id: string) => {
     setSelectedCandidates((prev) =>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ParserMetrics } from '../../types/parser';
+import type { ParserMetrics } from '../../types/parser';
 
 interface ComparisonTableProps {
   parserA: ParserMetrics;
@@ -10,7 +10,6 @@ interface ComparisonTableProps {
 export const ComparisonTable: React.FC<ComparisonTableProps> = ({
   parserA,
   parserB,
-  winner,
 }) => {
   const getWinnerColor = (isWinner: boolean) => {
     if (isWinner) return 'text-blue-600 font-bold';
