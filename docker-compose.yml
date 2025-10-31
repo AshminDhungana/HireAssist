@@ -1,0 +1,83 @@
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: hireassist-postgres
+    environment:
+      POSTGRES_USER: hireassist
+      POSTGRES_PASSWORD: hireassist_dev_password
+      POSTGRES_DB: hireassist_db
+    ports:
+      - "5432:6432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hireassist"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hireassist-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: hireassist-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hireassist-network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hireassist-backend
+    environment:
+      DATABASE_URL: postgresql://hireassist:hireassist_dev_password@postgres:5432/hireassist_db
+      REDIS_URL: redis://redis:6379
+      SECRET_KEY: dev_secret_key_change_in_production
+      DEBUG: "true"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - hireassist-network
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hireassist-frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/src:/app/src
+    networks:
+      - hireassist-network
+
+volumes:
+  postgres_data:
+
+networks:
+  hireassist-network:
+    driver: bridge

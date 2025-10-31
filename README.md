@@ -1,17 +1,22 @@
-# AI-Powered Resume Screening and Parsing System
+# HireAssist - AI-Powered Resume Screening and Parsing System
 
 ## Overview
 
 This system is a **comprehensive, production-ready Resume/CV Screening and Parsing System** built with modern technologies including **React**, **Tailwind CSS**, **Python FastAPI**, **RAG (Retrieval-Augmented Generation)**, and **LangChain**. The system leverages advanced AI techniques to automate resume screening, candidate ranking, and intelligent job matching.
 
+**Status**: ✅ Tasks 14 & 15 Complete - Dashboard & CI/CD Live
+
 ## 🚀 Key Features
 
 ### Core Functionality
-- **AI-Powered Resume Parsing**: Extract structured data from PDF/DOCX resumes using LangChain and NLP
+- ✅ **AI-Powered Resume Parsing**: Extract structured data from PDF/DOCX resumes using spaCy NLP and LangChain
+- ✅ **Dual Parser System**: NLP-based (Parser A) and Regex-based (Parser B) parsers for flexible extraction
+- ✅ **Parser Performance Dashboard**: Real-time comparison of parsing accuracy and speed
+- ✅ **Interactive Dashboard**: Modern React interface with real-time updates
+- ✅ **API Status Monitoring**: Real-time health check indicator
 - **Semantic Job Matching**: RAG-powered similarity search between resumes and job descriptions
 - **Real-time Candidate Ranking**: Score and rank candidates using vector embeddings
 - **Intelligent Screening**: Multi-criteria evaluation with customizable scoring algorithms
-- **Interactive Dashboard**: Modern React interface with real-time updates
 
 ### Advanced AI Features
 - **Vector Database Integration**: Pinecone/Qdrant for scalable semantic search
@@ -26,94 +31,118 @@ This system is a **comprehensive, production-ready Resume/CV Screening and Parsi
 - **API-First Design**: RESTful APIs with comprehensive documentation
 - **Scalable Infrastructure**: Docker containerization and cloud deployment ready
 - **Analytics Dashboard**: Comprehensive recruitment metrics and insights
+- **CI/CD Pipeline**: GitHub Actions automated testing and deployment
 
 ## 🛠 Tech Stack
 
 ### Frontend
-- **React 18+** with TypeScript
+- **React 18+** with TypeScript/JSX
 - **Tailwind CSS** for responsive design
-- **Redux Toolkit** for state management
-- **React Query** for data fetching
+- **Vite** for fast build tooling
 - **Chart.js** for analytics visualization
-- **React Hook Form** for form management
+- **React Query** for data fetching
+- **Lucide Icons** for UI components
 
 ### Backend
 - **FastAPI** with Python 3.11+
 - **PostgreSQL** for primary database
-- **Redis** for caching and sessions
-- **Celery** for background tasks
 - **SQLAlchemy** ORM with Alembic migrations
 - **Pydantic** for data validation
+- **Uvicorn** ASGI server
 
 ### AI/ML Stack
-- **LangChain** for RAG implementation
-- **OpenAI GPT-4** for text analysis
-- **Pinecone/Qdrant** vector database
 - **spaCy** for NER and text processing
+- **LangChain** for RAG implementation
+- **OpenAI GPT-4** for text analysis (optional)
+- **Pinecone/Qdrant** vector database
 - **Sentence Transformers** for embeddings
 - **FAISS** for local vector search
 
-### Infrastructure
+### DevOps & Infrastructure
 - **Docker** containerization
 - **Docker Compose** for development
-- **Nginx** reverse proxy
 - **GitHub Actions** CI/CD
-- **AWS/GCP** cloud deployment
-- **Prometheus/Grafana** monitoring
+- **Nginx** reverse proxy
+- **AWS/GCP** cloud deployment ready
+- **Prometheus/Grafana** monitoring (planned)
 
 ## 📁 Project Structure
 
 ```
-resume-screening-system/
-├── frontend/                    # React application
+HireAssist/
+├── frontend/                          # React Application
 │   ├── src/
-│   │   ├── api/ 
-│   │   ├── components/         # Reusable UI components
-│   │   ├── pages/             # Page components
-│   │   ├── hooks/             # Custom React hooks
-│   │   ├── services/          # API service functions
-│   │   ├── store/             # Redux store configuration
-│   │   ├── types/             # TypeScript type definitions
-│   │   └── utils/             # Utility functions
-│   ├── public/
+│   │   ├── api/
+│   │   │   └── resumeService.ts      # API service functions
+│   │   ├── components/
+│   │   │   ├── ResumeUpload.jsx      # Resume upload component
+│   │   │   ├── ApiStatus.tsx         # API health indicator
+│   │   │   └── ParserComparison/     # Parser comparison dashboard
+│   │   │       ├── ComparisonCard.tsx
+│   │   │       ├── PerformanceChart.tsx
+│   │   │       ├── ComparisonTable.tsx
+│   │   │       ├── ParserComparisonDashboard.tsx
+│   │   │       └── index.ts
+│   │   ├── pages/
+│   │   │   └── ParserComparisonPage.tsx
+│   │   ├── hooks/
+│   │   │   ├── useParserComparison.ts
+│   │   │   └── useApiStatus.ts
+│   │   ├── types/
+│   │   │   └── parser.ts
+│   │   ├── App.tsx
+│   │   ├── index.css
+│   │   └── main.tsx
+│   ├── __tests__/
+│   │   └── App.test.tsx
 │   ├── package.json
 │   ├── tailwind.config.js
+│   ├── vitest.config.ts
 │   └── vite.config.ts
-├── backend/                     # FastAPI application
+├── backend/                           # FastAPI Application
 │   ├── app/
-│   │   ├── api/               # API route handlers
+│   │   ├── main.py                   # Entry point
+│   │   ├── api/
 │   │   │   ├── v1/
 │   │   │   │   ├── auth.py
 │   │   │   │   ├── resumes.py
 │   │   │   │   ├── jobs.py
 │   │   │   │   └── analytics.py
-│   │   ├── core/              # Core configuration
+│   │   ├── core/
 │   │   │   ├── config.py
 │   │   │   ├── security.py
 │   │   │   └── database.py
-│   │   ├── models/            # SQLAlchemy models
-│   │   ├── schemas/           # Pydantic schemas
-│   │   ├── services/          # Business logic
+│   │   ├── models/                  # SQLAlchemy models
+│   │   ├── schemas/                 # Pydantic schemas
+│   │   ├── services/                # Business logic
 │   │   │   ├── resume_parser.py
+│   │   │   ├── parser_nlp.py        # NLP parser (Parser A)
+│   │   │   ├── parser_regex.py      # Regex parser (Parser B)
 │   │   │   ├── rag_engine.py
 │   │   │   ├── matching_service.py
 │   │   │   └── ai_service.py
-│   │   ├── utils/             # Utility functions
-│   │   └── dependencies.py    # FastAPI dependencies
-│   ├── alembic/               # Database migrations
-│   ├── tests/                 # Test suite
-│   ├── requirements.txt
+│   │   ├── utils/
+│   │   └── dependencies.py
+│   ├── tests/
+│   │   ├── __init__.py
+│   │   └── test_health.py
+│   ├── alembic/                     # Database migrations
+│   ├── requirements.txt              # Cleaned dependencies
+│   ├── .env.example
 │   └── Dockerfile
-├── ai-services/                # AI/ML microservices
-│   ├── resume-parser/         # Resume parsing service
-│   ├── rag-engine/           # RAG implementation
-│   └── vector-db/            # Vector database service
-├── infrastructure/            # Infrastructure as Code
+├── ai-services/                      # AI/ML microservices
+│   ├── resume-parser/
+│   ├── rag-engine/
+│   └── vector-db/
+├── infrastructure/                   # Infrastructure as Code
 │   ├── docker/
 │   ├── kubernetes/
 │   └── terraform/
-├── docs/                      # Documentation
-├── scripts/                   # Deployment scripts
+├── .github/
+│   └── workflows/
+│       └── ci.yml                   # GitHub Actions CI/CD
+├── docs/                            # Documentation
+├── scripts/                         # Deployment scripts
 ├── docker-compose.yml
 ├── docker-compose.prod.yml
 └── README.md
@@ -203,12 +232,11 @@ CREATE TABLE screening_results (
     detailed_analysis JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+```
 
 **Note:**  
 > This schema requires PostgreSQL with the `pgvector` extension enabled for embedding/vector operations.  
 > Initialize your database and apply Alembic migrations to create these tables automatically.
-
-```
 
 ## 🤖 AI Architecture
 
@@ -295,8 +323,8 @@ async def create_job(job_data: JobCreate, current_user: User):
 ### Development Setup
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/resume-screening-system.git
-cd resume-screening-system
+git clone https://github.com/AshminDhungana/HireAssist.git
+cd HireAssist
 
 # Backend setup
 cd backend
@@ -304,8 +332,8 @@ python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-# Database setup
-alembic upgrade head
+# Download spaCy model
+python -m spacy download en_core_web_sm
 
 # Environment variables
 cp .env.example .env
@@ -359,6 +387,12 @@ SMTP_PASSWORD=your_app_password
 ```
 
 ## 📊 API Documentation
+
+### Health Check
+```
+GET /api/v1/health
+Response: { "status": "healthy", "message": "API is running" }
+```
 
 ### Authentication Endpoints
 ```
@@ -478,6 +512,40 @@ async def health_check():
     }
 ```
 
+## ✨ Current Implementation Status
+
+### ✅ Completed (Tasks 14 & 15)
+
+#### Task 14: React Dashboard
+- ✅ Parser comparison page with metrics
+- ✅ Side-by-side comparison cards (Parser A vs B)
+- ✅ Performance visualization with Chart.js
+- ✅ Detailed comparison table
+- ✅ Professional Tailwind CSS styling
+- ✅ Responsive mobile design
+- ✅ API status indicator badge
+- ✅ Full TypeScript type safety
+
+#### Task 15: CI/CD Pipeline
+- ✅ GitHub Actions workflow (`.github/workflows/ci.yml`)
+- ✅ Backend automated testing (pytest)
+- ✅ Frontend build verification (Vite)
+- ✅ Code quality checks
+- ✅ Runs on push to main branch
+- ✅ Blocks merge if tests fail
+
+### 📋 In Progress
+- Resume parsing API endpoints
+- File upload handling
+- Database integration
+
+### 🔜 Planned
+- Advanced job matching algorithm
+- Vector database integration
+- Multi-tenant support
+- Advanced analytics dashboard
+- Mobile app
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -501,3 +569,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Built with ❤️ for modern recruitment workflows**
+
+**Current Version**: 1.0.0 (Tasks 14-15 Complete)  
+**Last Updated**: October 31, 2025  
+**Status**: 🟢 Development Active

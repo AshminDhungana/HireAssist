@@ -33,6 +33,10 @@ frontend/.vscode/*
 frontend/.idea
 frontend/.DS_Store
 
+.env
+.env.local
+.env.prod
+
 
 # --- COMMON IGNORE RULES ---
 # OS-specific
