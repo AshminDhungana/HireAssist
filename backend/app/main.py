@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1 import auth, resumes
+from app.api.v1 import auth, resumes, candidates
 from app.core.database import engine, Base
 
 app = FastAPI(
@@ -32,3 +32,5 @@ async def health():
 # Include API routers
 app.include_router(auth.router, prefix="/api/v1", tags=["authentication"])
 app.include_router(resumes.router, prefix="/api/v1", tags=["resumes"])
+app.include_router(candidates.router, prefix="/api/v1", tags=["candidates"])
+

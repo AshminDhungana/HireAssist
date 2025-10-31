@@ -6,11 +6,16 @@ from typing import List
 from app.services.rag_resume_parser import RAGResumeParser
 from app.services.resumeparser import ResumeParser
 import os
+from fastapi import Header
 from sqlalchemy import ForeignKey
 from sqlalchemy import Column, String, DateTime, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from app.core.database import Base
+from sqlalchemy import select
+from app.models.candidate import Candidate
+from app.models.resume import Resume
+from app.core.security import decode_token
 import uuid
 
 router = APIRouter()
@@ -25,15 +30,68 @@ if not os.path.exists(UPLOAD_DIR):
 
 
 @router.post("/upload", status_code=status.HTTP_201_CREATED)
-async def upload_resume(file: UploadFile = File(...)):
-    # Validate MIME type
-    if file.content_type not in ALLOWED_MIME_TYPES:
+async def upload_resume(
+    file: UploadFile = File(...),
+    authorization: str = Header(None),
+    db: AsyncSession = Depends(get_db)
+):
+    # ===== AUTHENTICATION =====
+    
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header required"
+        )
+    
+    # Extract token
+    try:
+        parts = authorization.split()
+        if len(parts) != 2 or parts[0].lower() != "bearer":
+            raise ValueError
+        token = parts[1]
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authorization header"
+        )
+    
+    # Decode token to get user_id
+    user_id = decode_token(token)
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token"
+        )
+    
+    # Get candidate for this user
+    candidate = await db.execute(
+        select(Candidate).where(Candidate.user_id == user_id)
+    )
+    candidate = candidate.scalars().first()
+    
+    if not candidate:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Candidate profile not found. Please create candidate profile first."
+        )
+    
+ 
+    # ===== VALIDATION =====
+    # Allow None content_type for PDFs (sometimes not detected)
+    if file.content_type and file.content_type not in ALLOWED_MIME_TYPES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Unsupported file type: {file.content_type}"
         )
+    
+    # Check file extension instead
+    if not file.filename.lower().endswith(('.pdf', '.docx')):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only PDF and DOCX files are allowed"
+        )
 
-    # Read file bytes and check size
+
     contents = await file.read()
     if len(contents) > MAX_FILE_SIZE_MB * 1024 * 1024:
         raise HTTPException(
@@ -41,15 +99,30 @@ async def upload_resume(file: UploadFile = File(...)):
             detail="File too large. Max size: 10MB"
         )
 
-    # Clean filename (prevent traversal)
+    # ===== SAVE FILE =====
     filename = file.filename.replace("/", "_").replace("\\", "_")
     save_path = os.path.join(UPLOAD_DIR, filename)
 
-    # Save file securely
     with open(save_path, "wb") as f:
         f.write(contents)
 
-    return {"message": "Resume uploaded successfully.", "filename": filename}
+    # ===== SAVE TO DATABASE =====
+    resume = Resume(
+        id=uuid.uuid4(),
+        candidate_id=candidate.id,
+        filename=filename,
+        file_path=save_path,
+    )
+    db.add(resume)
+    await db.commit()
+    await db.refresh(resume)
+
+    return {
+        "message": "Resume uploaded successfully",
+        "resume_id": str(resume.id),
+        "filename": filename
+    }
+
 
 
 @router.post("/{resume_id}/parse")

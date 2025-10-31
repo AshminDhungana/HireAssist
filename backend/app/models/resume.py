@@ -3,6 +3,8 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
 from sqlalchemy.sql import func
 import uuid
 from app.core.database import Base
+from sqlalchemy.orm import relationship
+
 
 
 class Resume(Base):
@@ -20,6 +22,8 @@ class Resume(Base):
     education_level = Column(String(100))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
+    candidate = relationship("Candidate", back_populates="resumes")
+
     
     def __repr__(self):
         return f"<Resume(id={self.id}, filename={self.filename})>"

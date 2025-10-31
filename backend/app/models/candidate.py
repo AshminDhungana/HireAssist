@@ -3,6 +3,8 @@ from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from sqlalchemy.sql import func
 from app.core.database import Base
+from sqlalchemy.orm import relationship
+
 
 class Candidate(Base):
     __tablename__ = "candidates"
@@ -14,3 +16,5 @@ class Candidate(Base):
     location = Column(String(255))
     summary = Column(Text)
     created_at = Column(DateTime, server_default=func.now())
+    resumes = relationship("Resume", back_populates="candidate")
+
