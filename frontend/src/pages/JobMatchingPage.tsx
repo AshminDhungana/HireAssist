@@ -1,9 +1,12 @@
-import { useState } from 'react'
-import { Button, Select, Card, Table, Badge } from '../components/ui'
+import { useState, useEffect } from 'react'
+import { Button, Select, Card, Badge } from '../components/ui'
+import { jobService } from '../services/jobService'
+import { matchingService } from '../services/matchingService'
 
 interface MatchResult {
   id: string
   candidateName: string
+  resumeFilename: string
   score: number
   skillMatch: number
   experienceMatch: number
@@ -12,60 +15,81 @@ interface MatchResult {
 }
 
 export default function JobMatchingPage() {
+  const [jobs, setJobs] = useState<{ value: string; label: string }[]>([])
   const [selectedJob, setSelectedJob] = useState('')
   const [matchResults, setMatchResults] = useState<MatchResult[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [jobsLoading, setJobsLoading] = useState(true)
   const [filterScore, setFilterScore] = useState(0)
+  const [error, setError] = useState<string | null>(null)
 
-  // Mock data - replace with API calls later
-  const jobs = [
-    { value: '1', label: 'Senior React Developer' },
-    { value: '2', label: 'Full Stack Engineer' },
-    { value: '3', label: 'Data Science Manager' },
-  ]
+  // Load jobs on mount
+  useEffect(() => {
+    loadJobs()
+  }, [])
 
-  const mockResults: MatchResult[] = [
-    {
-      id: '1',
-      candidateName: 'John Doe',
-      score: 92,
-      skillMatch: 95,
-      experienceMatch: 88,
-      educationMatch: 90,
-      status: 'excellent',
-    },
-    {
-      id: '2',
-      candidateName: 'Jane Smith',
-      score: 85,
-      skillMatch: 88,
-      experienceMatch: 82,
-      educationMatch: 85,
-      status: 'good',
-    },
-    {
-      id: '3',
-      candidateName: 'Mike Johnson',
-      score: 72,
-      skillMatch: 75,
-      experienceMatch: 70,
-      educationMatch: 72,
-      status: 'fair',
-    },
-  ]
+  const loadJobs = async () => {
+    setJobsLoading(true)
+    setError(null)
+    try {
+      const result = await jobService.listJobs(0, 100)
+      if (result.success && result.data.jobs) {
+        const jobOptions = result.data.jobs.map((job: any) => ({
+          value: job.id,
+          label: job.title
+        }))
+        setJobs(jobOptions)
+      } else {
+        setError('Failed to load jobs')
+      }
+    } catch (err) {
+      setError('Error loading jobs')
+      console.error(err)
+    } finally {
+      setJobsLoading(false)
+    }
+  }
 
-  const handleMatchCandidates = () => {
+  const handleMatchCandidates = async () => {
     if (!selectedJob) {
       alert('Please select a job')
       return
     }
 
     setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      setMatchResults(mockResults)
+    setError(null)
+    try {
+      // Get match results from backend
+      const result = await matchingService.getMatchResults(selectedJob, 0, 100, 0)
+      
+      if (result.success && result.data.results) {
+        // Transform API response to match UI interface
+        const transformedResults: MatchResult[] = result.data.results.map((r: any) => ({
+          id: r.screening_result_id,
+          candidateName: r.candidate_name,
+          resumeFilename: r.resume_filename,
+          score: Math.round(r.overall_score * 100),
+          skillMatch: Math.round(r.skill_match_score * 100),
+          experienceMatch: Math.round(r.experience_score * 100),
+          educationMatch: Math.round(r.education_score * 100),
+          status:
+            r.overall_score >= 0.8 ? 'excellent' :
+            r.overall_score >= 0.6 ? 'good' :
+            r.overall_score >= 0.4 ? 'fair' : 'poor'
+        }))
+        
+        // Sort by score descending
+        transformedResults.sort((a, b) => b.score - a.score)
+        setMatchResults(transformedResults)
+      } else {
+        setError(result.error || 'Failed to get match results')
+      }
+    } catch (err) {
+      setError('Error matching candidates')
+      console.error(err)
+    } finally {
       setIsLoading(false)
-    }, 1500)
+    }
   }
 
   const filteredResults = matchResults.filter((r) => r.score >= filterScore)
@@ -86,14 +110,15 @@ export default function JobMatchingPage() {
     { key: 'status', label: 'Status' },
   ]
 
-  const tableData = filteredResults.map((r) => ({
-    ...r,
-    score: `${r.score}%`,
-    skillMatch: `${r.skillMatch}%`,
-    experienceMatch: `${r.experienceMatch}%`,
-    educationMatch: `${r.educationMatch}%`,
-    status: <Badge variant={statusColors[r.status]}>{r.status}</Badge>,
-  }))
+  // const tableData = filteredResults.map((r) => ({
+  //   ...r,
+  //   score: `${r.score}%`,
+  //   skillMatch: `${r.skillMatch}%`,
+  //   experienceMatch: `${r.experienceMatch}%`,
+  //   educationMatch: `${r.educationMatch}%`,
+  //   status: <Badge variant={statusColors[r.status]}>{r.status}</Badge>,
+  // }))
+
 
   return (
     <div className="space-y-8">
@@ -110,13 +135,27 @@ export default function JobMatchingPage() {
 
         {/* Matching Controls */}
         <div className="p-8 sm:p-12">
+          {error && (
+            <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-            <Select
-              label="Select Job"
-              value={selectedJob}
-              onChange={(e) => setSelectedJob(e.target.value)}
-              options={jobs}
-            />
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                Select Job
+              </label>
+              <Select
+                value={selectedJob}
+                onChange={(e) => setSelectedJob(e.target.value)}
+                options={[
+                  { value: '', label: 'Choose a job...' },
+                  ...jobs
+                ]}
+                disabled={jobsLoading}
+              />
+            </div>
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
                 Minimum Score: {filterScore}%
@@ -134,10 +173,10 @@ export default function JobMatchingPage() {
 
           <Button
             onClick={handleMatchCandidates}
-            isLoading={isLoading}
+            disabled={!selectedJob || isLoading}
             className="w-full sm:w-auto"
           >
-            🔍 Find Matching Candidates
+            {isLoading ? '🔄 Finding Candidates...' : '🔍 Find Matching Candidates'}
           </Button>
         </div>
       </section>
@@ -184,7 +223,57 @@ export default function JobMatchingPage() {
             <h3 className="text-xl font-bold text-gray-900 mb-4">
               Candidate Matches (Filtered: {filteredResults.length})
             </h3>
-            <Table columns={tableColumns} data={tableData} />
+            {filteredResults.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-100 border-b-2 border-gray-300">
+                      {tableColumns.map((col) => (
+                        <th
+                          key={col.key}
+                          className="px-4 py-3 text-left text-sm font-semibold text-gray-900"
+                        >
+                          {col.label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredResults.map((result) => (
+                      <tr
+                        key={result.id}
+                        className="border-b border-gray-200 hover:bg-gray-50 transition"
+                      >
+                        <td className="px-4 py-3 text-sm font-semibold text-gray-900">
+                          {result.candidateName}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-bold text-green-600">
+                          {result.score}%
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-900">
+                          {result.skillMatch}%
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-900">
+                          {result.experienceMatch}%
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-900">
+                          {result.educationMatch}%
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <Badge variant={statusColors[result.status]}>
+                            {result.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                No candidates match the filter criteria
+              </div>
+            )}
           </Card>
 
           {/* Top Candidate Detail */}
@@ -193,7 +282,7 @@ export default function JobMatchingPage() {
               <h3 className="text-xl font-bold text-gray-900 mb-4">
                 🏆 Top Match: {filteredResults[0].candidateName}
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
                 <div>
                   <p className="text-sm text-gray-600">Overall Score</p>
                   <p className="text-2xl font-bold text-green-600">
@@ -220,30 +309,30 @@ export default function JobMatchingPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Button variant="primary">📧 Send Offer</Button>
                 <Button variant="secondary">📄 View Resume</Button>
               </div>
             </Card>
           )}
-
-          {filteredResults.length === 0 && matchResults.length > 0 && (
-            <div className="text-center py-12 bg-gray-50 rounded-lg">
-              <p className="text-gray-600 text-lg">
-                No candidates match the minimum score filter. Try lowering the threshold.
-              </p>
-            </div>
-          )}
         </section>
       )}
 
       {/* Empty State */}
-      {matchResults.length === 0 && (
+      {matchResults.length === 0 && !isLoading && (
         <Card className="text-center py-12">
           <div className="text-6xl mb-4">🔍</div>
           <p className="text-gray-600 text-lg">
             Select a job and click "Find Matching Candidates" to see results
           </p>
+        </Card>
+      )}
+
+      {/* Loading State */}
+      {isLoading && (
+        <Card className="text-center py-12">
+          <div className="text-4xl mb-4">⏳</div>
+          <p className="text-gray-600 text-lg">Finding matching candidates...</p>
         </Card>
       )}
     </div>

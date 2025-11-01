@@ -7,7 +7,7 @@ from app.services.rag_resume_parser import RAGResumeParser
 from app.services.resumeparser import ResumeParser, FileParseError
 from app.schemas.resumes import ParseResumeRequest, ParseResumeResponse
 import os
-from sqlalchemy import select
+from sqlalchemy import select, desc
 from app.models.candidate import Candidate
 from app.models.resume import Resume
 from app.core.security import decode_token
@@ -292,3 +292,129 @@ async def parse_resume(
     # Return parsed data through Pydantic validation
     return ParseResumeResponse(**parsed)
 
+
+@router.get("/list")
+async def list_resumes(
+    authorization: str = Header(None),
+    db: AsyncSession = Depends(get_db)
+):
+    """List all resumes for authenticated user"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+    
+    parts = authorization.split()
+    user_id = decode_token(parts[1])
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    # Get candidate
+    candidate_result = await db.execute(
+        select(Candidate).where(Candidate.user_id == user_id)
+    )
+    candidate = candidate_result.scalars().first()
+    
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    
+    # Get resumes
+    resumes = await db.execute(
+        select(Resume)
+        .where(Resume.candidate_id == candidate.id)
+        .order_by(desc(Resume.created_at))
+    )
+    resumes = resumes.scalars().all()
+    
+    return {
+        "resumes": [
+            {
+                "id": str(r.id),
+                "filename": r.filename,
+                "skills": r.skills or [],
+                "experience_years": r.experience_years,
+                "education_level": r.education_level
+            }
+            for r in resumes
+        ]
+    }
+
+
+@router.get("/{resume_id}/details")
+async def get_resume_details(
+    resume_id: str,
+    authorization: str = Header(None),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get detailed resume information"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+    
+    parts = authorization.split()
+    user_id = decode_token(parts[1])
+    
+    try:
+        rid = uuid.UUID(resume_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid resume ID")
+    
+    # Get resume with ownership check
+    result = await db.execute(
+        select(Resume)
+        .join(Candidate)
+        .where(Resume.id == rid, Candidate.user_id == user_id)
+    )
+    resume = result.scalars().first()
+    
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    return {
+        "id": str(resume.id),
+        "filename": resume.filename,
+        "parsed_data": resume.parsed_data,
+        "raw_text": resume.raw_text,
+        "skills": resume.skills,
+        "experience_years": resume.experience_years,
+        "education_level": resume.education_level
+    }
+
+
+@router.delete("/{resume_id}")
+async def delete_resume(
+    resume_id: str,
+    authorization: str = Header(None),
+    db: AsyncSession = Depends(get_db)
+):
+    """Delete a resume and its file"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+    
+    parts = authorization.split()
+    user_id = decode_token(parts[1])
+    
+    try:
+        rid = uuid.UUID(resume_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid resume ID")
+    
+    result = await db.execute(
+        select(Resume)
+        .join(Candidate)
+        .where(Resume.id == rid, Candidate.user_id == user_id)
+    )
+    resume = result.scalars().first()
+    
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    # Delete file
+    if resume.file_path and os.path.exists(resume.file_path):
+        try:
+            os.remove(resume.file_path)
+        except Exception as e:
+            logger.warning(f"Failed to delete file: {e}")
+    
+    # Delete from DB
+    await db.delete(resume)
+    await db.commit()
+    
+    return {"message": "Resume deleted"}

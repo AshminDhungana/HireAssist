@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button, Input, Select, Card, Modal, Badge } from '../components/ui'
+import { candidateService } from '../services/candidateService'
 
 interface Candidate {
   id: string
@@ -14,65 +15,58 @@ interface Candidate {
 }
 
 export default function CandidatesPage() {
-  const [candidates, setCandidates] = useState<Candidate[]>([
-    {
-      id: '1',
-      name: 'John Doe',
-      email: 'john@example.com',
-      phone: '+1 (555) 123-4567',
-      location: 'New York, USA',
-      resumesCount: 2,
-      status: 'active',
-      appliedJobs: 3,
-      lastUpdate: '2025-10-31',
-    },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      phone: '+1 (555) 234-5678',
-      location: 'San Francisco, USA',
-      resumesCount: 1,
-      status: 'pending',
-      appliedJobs: 1,
-      lastUpdate: '2025-10-30',
-    },
-    {
-      id: '3',
-      name: 'Mike Johnson',
-      email: 'mike@example.com',
-      phone: '+1 (555) 345-6789',
-      location: 'Austin, USA',
-      resumesCount: 3,
-      status: 'hired',
-      appliedJobs: 5,
-      lastUpdate: '2025-10-28',
-    },
-    {
-      id: '4',
-      name: 'Sarah Williams',
-      email: 'sarah@example.com',
-      phone: '+1 (555) 456-7890',
-      location: 'Boston, USA',
-      resumesCount: 1,
-      status: 'rejected',
-      appliedJobs: 2,
-      lastUpdate: '2025-10-25',
-    },
-  ])
-
+  const [candidates, setCandidates] = useState<Candidate[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([])
+  const [skip, setSkip] = useState(0)
+  const [limit] = useState(20)
+
+  // Load candidates from backend
+  useEffect(() => {
+    loadCandidates()
+  }, [skip])
+
+  const loadCandidates = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await candidateService.listCandidates(skip, limit)
+      
+      if (result.success && result.data) {
+        // Transform API response to match UI interface
+        const transformedCandidates: Candidate[] = result.data.candidates.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          email: c.email,
+          phone: c.phone || 'N/A',
+          location: c.location || 'N/A',
+          resumesCount: c.resume_count || 0,
+          status: 'active' as const, // Default status (you can update via API later)
+          appliedJobs: 0, // This would come from applications table if available
+          lastUpdate: new Date().toISOString().split('T')[0],
+        }))
+        setCandidates(transformedCandidates)
+      } else {
+        setError(result.error || 'Failed to load candidates')
+      }
+    } catch (err) {
+      setError('Error loading candidates')
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredCandidates = candidates.filter((c) => {
     const matchesSearch =
       c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = !filterStatus || c.status === filterStatus
-
     return matchesSearch && matchesStatus
   })
 
@@ -90,12 +84,6 @@ export default function CandidatesPage() {
     { key: 'appliedJobs', label: 'Applications' },
     { key: 'status', label: 'Status' },
   ]
-
-  //const tableData = filteredCandidates.map((c) => ({
-  // ...c,
-  // appliedJobs: c.appliedJobs,
-  //  status: <Badge variant={statusColors[c.status]}>{c.status}</Badge>,
-  //}))
 
   const handleSelectCandidate = (id: string) => {
     setSelectedCandidates((prev) =>
@@ -124,8 +112,11 @@ export default function CandidatesPage() {
     )
   }
 
-  const handleDeleteCandidate = (candidateId: string) => {
-    setCandidates(candidates.filter((c) => c.id !== candidateId))
+  const handleDeleteCandidate = async (candidateId: string) => {
+    if (window.confirm('Are you sure you want to delete this candidate?')) {
+      // Delete via API if needed
+      setCandidates(candidates.filter((c) => c.id !== candidateId))
+    }
   }
 
   return (
@@ -141,6 +132,13 @@ export default function CandidatesPage() {
           </p>
         </div>
       </section>
+
+      {/* Error Alert */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -228,91 +226,116 @@ export default function CandidatesPage() {
         <h3 className="text-xl font-bold text-gray-900 mb-4">
           Candidates ({filteredCandidates.length})
         </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-gray-100 border-b-2 border-gray-300">
-                <th className="px-4 py-3 text-left">
-                  <input
-                    type="checkbox"
-                    checked={
-                      selectedCandidates.length === filteredCandidates.length &&
-                      filteredCandidates.length > 0
-                    }
-                    onChange={handleSelectAll}
-                    className="w-4 h-4 cursor-pointer"
-                  />
-                </th>
-                {tableColumns.map((col) => (
-                  <th
-                    key={col.key}
-                    className="px-4 py-3 text-left text-sm font-semibold text-gray-900"
-                  >
-                    {col.label}
-                  </th>
-                ))}
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCandidates.map((candidate) => (
-                <tr
-                  key={candidate.id}
-                  className="border-b border-gray-200 hover:bg-gray-50 transition"
-                >
-                  <td className="px-4 py-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedCandidates.includes(candidate.id)}
-                      onChange={() => handleSelectCandidate(candidate.id)}
-                      className="w-4 h-4 cursor-pointer"
-                    />
-                  </td>
-                  <td className="px-4 py-3 text-sm font-semibold text-gray-900">
-                    {candidate.name}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {candidate.email}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {candidate.location}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-900 font-semibold">
-                    {candidate.appliedJobs}
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    <Badge variant={statusColors[candidate.status]}>
-                      {candidate.status}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleViewDetails(candidate)}
-                        className="text-blue-600 hover:text-blue-800 font-semibold text-xs"
-                      >
-                        View
-                      </button>
-                      <button
-                        onClick={() => handleDeleteCandidate(candidate.id)}
-                        className="text-red-600 hover:text-red-800 font-semibold text-xs"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
 
-        {filteredCandidates.length === 0 && (
-          <div className="text-center py-12 text-gray-500">
-            <p className="text-lg">No candidates found</p>
-          </div>
+        {loading ? (
+          <div className="text-center py-8 text-gray-500">Loading candidates...</div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-100 border-b-2 border-gray-300">
+                    <th className="px-4 py-3 text-left">
+                      <input
+                        type="checkbox"
+                        checked={
+                          selectedCandidates.length === filteredCandidates.length &&
+                          filteredCandidates.length > 0
+                        }
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 cursor-pointer"
+                      />
+                    </th>
+                    {tableColumns.map((col) => (
+                      <th
+                        key={col.key}
+                        className="px-4 py-3 text-left text-sm font-semibold text-gray-900"
+                      >
+                        {col.label}
+                      </th>
+                    ))}
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCandidates.map((candidate) => (
+                    <tr
+                      key={candidate.id}
+                      className="border-b border-gray-200 hover:bg-gray-50 transition"
+                    >
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedCandidates.includes(candidate.id)}
+                          onChange={() => handleSelectCandidate(candidate.id)}
+                          className="w-4 h-4 cursor-pointer"
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-sm font-semibold text-gray-900">
+                        {candidate.name}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {candidate.email}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {candidate.location}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900 font-semibold">
+                        {candidate.appliedJobs}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <Badge variant={statusColors[candidate.status]}>
+                          {candidate.status}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleViewDetails(candidate)}
+                            className="text-blue-600 hover:text-blue-800 font-semibold text-xs"
+                          >
+                            View
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCandidate(candidate.id)}
+                            className="text-red-600 hover:text-red-800 font-semibold text-xs"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {filteredCandidates.length === 0 && (
+              <div className="text-center py-12 text-gray-500">
+                <p className="text-lg">No candidates found</p>
+              </div>
+            )}
+
+            {/* Pagination */}
+            <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
+              <button
+                onClick={() => setSkip(Math.max(0, skip - limit))}
+                disabled={skip === 0}
+                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-600">Page {Math.floor(skip / limit) + 1}</span>
+              <button
+                onClick={() => setSkip(skip + limit)}
+                className="px-4 py-2 bg-gray-200 rounded"
+              >
+                Next
+              </button>
+            </div>
+          </>
         )}
       </Card>
 

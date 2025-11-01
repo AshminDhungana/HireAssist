@@ -1,96 +1,174 @@
-import { useState, lazy, Suspense } from 'react'
+import { useState, lazy, Suspense, useEffect } from 'react'
 import ResumeUpload from './components/ResumeUpload'
 import ApiStatus from './components/ApiStatus'
+import AuthPage from './pages/AuthPage'
 
 const ParserComparisonPage = lazy(() => import('./pages/ParserComparisonPage'))
 const JobMatchingPage = lazy(() => import('./pages/JobMatchingPage'))
 const CandidatesPage = lazy(() => import('./pages/CandidatesPage'))
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'))
 const InTheFuturePage = lazy(() => import('./pages/InTheFuturePage'))
+const JobManagementPage = lazy(() => import('./pages/JobManagementPage'))
+const ResumeManagementPage = lazy(() => import('./pages/ResumeManagementPage'))
 
-
-type PageType = 'home' | 'comparison' | 'matching' | 'candidates' | 'analytics' | 'future'
+type PageType = 'home' | 'comparison' | 'matching' | 'candidates' | 'analytics' | 'future' | 'jobs' | 'resumes'
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('home')
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState<any>(null)
+
+  // Check if user is already logged in on mount
+  useEffect(() => {
+    const token = localStorage.getItem('access_token')
+    const userData = localStorage.getItem('user')
+    if (token && userData) {
+      setIsAuthenticated(true)
+      setUser(JSON.parse(userData))
+    }
+  }, [])
+
+  const handleLoginSuccess = (token: string, userData: any) => {
+    setIsAuthenticated(true)
+    setUser(userData)
+    setCurrentPage('home')
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('user')
+    setIsAuthenticated(false)
+    setUser(null)
+    setCurrentPage('home')
+  }
+
+  // 🔐 If not authenticated, show login page
+  if (!isAuthenticated) {
+    return <AuthPage onLoginSuccess={handleLoginSuccess} />
+  }
 
   const isHomePage = currentPage === 'home'
   const isComparisonPage = currentPage === 'comparison'
   const isMatchingPage = currentPage === 'matching'
   const isCandidatesPage = currentPage === 'candidates'
   const isAnalyticsPage = currentPage === 'analytics'
+  const isJobsPage = currentPage === 'jobs'
+  const isResumesPage = currentPage === 'resumes'
+
+  // Navigation button component (reusable)
+  const NavButton = ({
+    isActive,
+    onClick,
+    icon,
+    label,
+    color,
+  }: {
+    isActive: boolean
+    onClick: () => void
+    icon: string
+    label: string
+    color: string
+  }) => (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+        isActive
+          ? `bg-gradient-to-r ${color} text-white`
+          : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+      }`}
+    >
+      <span className="text-lg">{icon}</span>
+      <span className="hidden sm:inline">{label}</span>
+    </button>
+  )
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-50 to-white text-gray-800 antialiased">
       {/* Navigation Bar */}
       <nav className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between h-16 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8 gap-3">
-          {/* Logo/Title */}
-          <h1 className="text-3xl font-black text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text">
-            HireAssist
-          </h1>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Top row: Logo + Search + User */}
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <h1 className="text-2xl sm:text-3xl font-black text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text whitespace-nowrap">
+              HireAssist
+            </h1>
 
-          {/* Navigation Buttons */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
-            <button
+            {/* User Info & Logout */}
+            <div className="flex items-center gap-3">
+              {user && (
+                <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
+                  <span className="text-sm font-semibold text-blue-900">👤 {user.email}</span>
+                </div>
+              )}
+              <button
+                onClick={handleLogout}
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+              >
+                🚪 Logout
+              </button>
+              <ApiStatus />
+            </div>
+          </div>
+
+          {/* Bottom row: Navigation buttons */}
+          <div className="flex items-center gap-1.5 sm:gap-2 pb-4 overflow-x-auto scrollbar-hide">
+            <NavButton
+              isActive={isHomePage}
               onClick={() => setCurrentPage('home')}
-              className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
-                isHomePage ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <span className="text-lg">📤</span>
-              <span className="hidden sm:inline">Upload</span>
-            </button>
-
-            <button
+              icon="📤"
+              label="Upload"
+              color="from-blue-600 to-indigo-600"
+            />
+            <NavButton
+              isActive={isComparisonPage}
               onClick={() => setCurrentPage('comparison')}
-              className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 ${
-                isComparisonPage ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <span className="text-lg">📊</span>
-              <span className="hidden sm:inline">Compare</span>
-            </button>
-
-            <button
+              icon="📊"
+              label="Compare"
+              color="from-indigo-600 to-purple-600"
+            />
+            <NavButton
+              isActive={isMatchingPage}
               onClick={() => setCurrentPage('matching')}
-              className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-green-300 ${
-                isMatchingPage ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <span className="text-lg">🎯</span>
-              <span className="hidden sm:inline">Matching</span>
-            </button>
-
-            <button
+              icon="🎯"
+              label="Matching"
+              color="from-green-600 to-teal-600"
+            />
+            <NavButton
+              isActive={isCandidatesPage}
               onClick={() => setCurrentPage('candidates')}
-              className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-orange-300 ${
-                isCandidatesPage ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <span className="text-lg">👥</span>
-              <span className="hidden sm:inline">Candidates</span>
-            </button>
-
-            <button
+              icon="👥"
+              label="Candidates"
+              color="from-orange-600 to-red-600"
+            />
+            <NavButton
+              isActive={isJobsPage}
+              onClick={() => setCurrentPage('jobs')}
+              icon="💼"
+              label="Jobs"
+              color="from-purple-600 to-pink-600"
+            />
+            <NavButton
+              isActive={isResumesPage}
+              onClick={() => setCurrentPage('resumes')}
+              icon="📄"
+              label="Resumes"
+              color="from-pink-600 to-red-600"
+            />
+            <NavButton
+              isActive={isAnalyticsPage}
               onClick={() => setCurrentPage('analytics')}
-              className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-cyan-300 ${
-                isAnalyticsPage ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <span className="text-lg">📈</span>
-              <span className="hidden sm:inline">Analytics</span>
-            </button>
-            <button
+              icon="📈"
+              label="Analytics"
+              color="from-cyan-600 to-blue-600"
+            />
+            <NavButton
+              isActive={currentPage === 'future'}
               onClick={() => setCurrentPage('future')}
-              className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-purple-300 ${
-                currentPage === 'future' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              <span className="text-lg">🚀</span>
-              <span className="hidden sm:inline">Future</span>
-            </button>
-            <ApiStatus />
+              icon="🚀"
+              label="Future"
+              color="from-purple-600 to-pink-600"
+            />
           </div>
         </div>
       </nav>
@@ -159,12 +237,27 @@ export default function App() {
             </Suspense>
           )}
 
+          {/* JOBS PAGE */}
+          {isJobsPage && (
+            <Suspense fallback={<LoadingSpinner />}>
+              <JobManagementPage />
+            </Suspense>
+          )}
+
+          {/* RESUMES PAGE */}
+          {isResumesPage && (
+            <Suspense fallback={<LoadingSpinner />}>
+              <ResumeManagementPage />
+            </Suspense>
+          )}
+
           {/* ANALYTICS PAGE */}
           {isAnalyticsPage && (
             <Suspense fallback={<LoadingSpinner />}>
               <AnalyticsPage />
             </Suspense>
           )}
+
           {/* FUTURE PAGE */}
           {currentPage === 'future' && (
             <Suspense fallback={<LoadingSpinner />}>
@@ -175,15 +268,15 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full mt-auto bg-gray-900 text-gray-300 border-t border-gray-800">
+      <footer className="w-full mt-auto bg-gradient-to-r from-gray-900 to-gray-800 text-gray-300 border-t border-gray-700">
         <div className="px-6 py-8 mx-auto max-w-7xl md:py-12 text-center">
           <h2 className="text-2xl font-bold text-white leading-snug xl:text-3xl">
             HireAssist — AI Resume Screening System
           </h2>
-          <a className="inline-block mt-3 text-sm text-blue-400 hover:text-blue-300 transition" href="#">
-            Developed By Ashmin Dhungana
-          </a>
-          <p className="mt-7 text-sm">© {new Date().getFullYear()} HireAssist</p>
+          <p className="mt-3 text-sm text-gray-400">
+            Developed with ❤️ by Ashmin Dhungana
+          </p>
+          <p className="mt-7 text-sm text-gray-500">© {new Date().getFullYear()} HireAssist. All rights reserved.</p>
         </div>
       </footer>
     </div>

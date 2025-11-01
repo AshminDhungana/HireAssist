@@ -1,5 +1,6 @@
 from sqlalchemy import Column, String, Boolean, DateTime, Enum
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 import uuid
 import enum
 from sqlalchemy.sql import func
@@ -16,16 +17,49 @@ class UserRole(str, enum.Enum):
 class User(Base):
     __tablename__ = "users"
     
+    # Primary key
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    
+    # Authentication
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
+    
+    # Profile
     first_name = Column(String(100), nullable=True)
     last_name = Column(String(100), nullable=True)
+    
+    # Role & Status
     role = Column(Enum(UserRole), nullable=False, default=UserRole.CANDIDATE)
-    is_active = Column(Boolean, default=True)
-    is_verified = Column(Boolean, default=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
+    is_active = Column(Boolean, default=True, nullable=False)
+    is_verified = Column(Boolean, default=False, nullable=False)
+    
+    # NEW: Approval System
+    is_approved = Column(Boolean, default=False, nullable=False)  # Admin approval
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now(), nullable=False)
+    approved_at = Column(DateTime(timezone=True), nullable=True)  # When approved by admin
+    
+    # Relationships
+    candidates = relationship("Candidate", back_populates="user", cascade="all, delete-orphan")
+    resumes = relationship("Resume", back_populates="user", cascade="all, delete-orphan")
     
     def __repr__(self):
-        return f"<User(id={self.id}, email={self.email}, role={self.role})>"
+        return f"<User(id={self.id}, email={self.email}, role={self.role}, approved={self.is_approved})>"
+    
+    def is_admin(self) -> bool:
+        """Check if user is admin"""
+        return self.role == UserRole.ADMIN
+    
+    def is_candidate(self) -> bool:
+        """Check if user is candidate"""
+        return self.role == UserRole.CANDIDATE
+    
+    def is_recruiter(self) -> bool:
+        """Check if user is recruiter"""
+        return self.role == UserRole.RECRUITER
+    
+    def can_login(self) -> bool:
+        """Check if user can login (approved & active)"""
+        return self.is_active and (self.is_approved or self.role == UserRole.ADMIN)
