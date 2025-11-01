@@ -14,7 +14,8 @@ from app.core.security import decode_token
 from app.core.config import settings
 import uuid
 
-router = APIRouter(prefix="/resumes")
+router = APIRouter(prefix="/resumes", tags=["resumes"])
+
 
 ALLOWED_MIME_TYPES = ["application/pdf", 
                       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
@@ -66,11 +67,16 @@ async def upload_resume(
     candidate = candidate.scalars().first()
     
     if not candidate:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Candidate profile not found. Please create candidate profile first."
+        candidate = Candidate(
+            id=uuid.uuid4(),
+            user_id=uuid.UUID(user_id) if isinstance(user_id, str) else user_id,
+            name="Candidate",  # ← ADD DEFAULT NAME
+            email="candidate@example.com"  # ← ADD DEFAULT EMAIL
         )
-    
+        db.add(candidate)
+        await db.commit()
+        await db.refresh(candidate)
+
  
     # ===== VALIDATION =====
     # Allow None content_type for PDFs (sometimes not detected)

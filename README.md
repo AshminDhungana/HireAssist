@@ -4,39 +4,39 @@
 
 This system is a **comprehensive, production-ready Resume/CV Screening and Parsing System** built with modern technologies including **React**, **Tailwind CSS**, **Python FastAPI**, **RAG (Retrieval-Augmented Generation)**, and **LangChain**. The system leverages advanced AI techniques to automate resume screening, candidate ranking, and intelligent job matching.
 
-**Status**: ✅ Working On It Please Wait ...
+**Status**: ✅ **ACTIVE DEVELOPMENT** - Core features working, system operational
 
 ### Dashboard Interface
 ![HireAssist Dashboard](docs/images/dashboard.png)
 
+---
 
 ## 🚀 Key Features
 
-### Core Functionality
-- ✅ **AI-Powered Resume Parsing**: Extract structured data from PDF/DOCX resumes using spaCy NLP and LangChain
-- ✅ **Dual Parser System**: NLP-based (Parser A) and Regex-based (Parser B) parsers for flexible extraction
-- ✅ **Parser Performance Dashboard**: Real-time comparison of parsing accuracy and speed
-- ✅ **Interactive Dashboard**: Modern React interface with real-time updates
-- ✅ **API Status Monitoring**: Real-time health check indicator
-- ✅ **Docker Support**: Complete containerization for development and production
+### ✅ Currently Working Features
+- **AI-Powered Resume Parsing**: Extract structured data from PDF/DOCX resumes using spaCy NLP
+- **Resume Upload & Storage**: Secure file upload with candidate profile linking
+- **Dual Parser System**: NLP-based and Regex-based parsers for flexible extraction
+- **Interactive Dashboard**: Modern React interface with real-time updates
+- **API Status Monitoring**: Real-time health check indicator
+- **Docker Support**: Complete containerization for development and production
+- **Authentication System**: JWT-based login with role-based access control
+- **Database Integration**: PostgreSQL with complete schema for candidates, resumes, jobs
+
+### 🔜 In Development / Planned
 - **Semantic Job Matching**: RAG-powered similarity search between resumes and job descriptions
 - **Real-time Candidate Ranking**: Score and rank candidates using vector embeddings
 - **Intelligent Screening**: Multi-criteria evaluation with customizable scoring algorithms
-
-### Advanced AI Features
 - **Vector Database Integration**: Pinecone/Qdrant for scalable semantic search
 - **Hybrid Search**: Combines keyword-based and semantic matching
-- **Entity Recognition**: Extract skills, experience, education using spaCy NER
+- **Entity Recognition**: Advanced skills extraction using spaCy NER
 - **Adaptive Retrieval**: RAG Fusion for complex job requirement queries
 - **Conversation AI**: Chat interface for querying candidate database
-
-### Enterprise Features
-- **Role-Based Authentication**: JWT-based security with Admin/Recruiter/Candidate roles
 - **Multi-tenant Architecture**: Support for multiple organizations
-- **API-First Design**: RESTful APIs with comprehensive documentation
-- **Scalable Infrastructure**: Docker containerization and cloud deployment ready
 - **Analytics Dashboard**: Comprehensive recruitment metrics and insights
 - **CI/CD Pipeline**: GitHub Actions automated testing and deployment
+
+---
 
 ## 🛠 Tech Stack
 
@@ -44,32 +44,32 @@ This system is a **comprehensive, production-ready Resume/CV Screening and Parsi
 - **React 18+** with TypeScript/JSX
 - **Tailwind CSS** for responsive design
 - **Vite** for fast build tooling
-- **Chart.js** for analytics visualization
-- **React Query** for data fetching
+- **Axios** for API communication
+- **React Query** for data fetching (optional)
 - **Lucide Icons** for UI components
 
 ### Backend
-- **FastAPI** with Python 3.11+
+- **FastAPI** with Python 3.13+
 - **PostgreSQL** for primary database
-- **SQLAlchemy** ORM with Alembic migrations
+- **SQLAlchemy** ORM with async support
 - **Pydantic** for data validation
 - **Uvicorn** ASGI server
+- **spaCy** for NLP and text processing
 
 ### AI/ML Stack
 - **spaCy** for NER and text processing
-- **LangChain** for RAG implementation
+- **LangChain** for RAG implementation (framework ready)
 - **OpenAI GPT-4** for text analysis (optional)
-- **Pinecone/Qdrant** vector database
-- **Sentence Transformers** for embeddings
-- **FAISS** for local vector search
+- **Sentence Transformers** for embeddings (optional)
 
 ### DevOps & Infrastructure
 - **Docker** containerization
 - **Docker Compose** for development and production
-- **GitHub Actions** CI/CD
 - **Nginx** reverse proxy
-- **PostgreSQL + Redis** with Docker
+- **PostgreSQL** with Docker
 - **AWS/GCP** cloud deployment ready
+
+---
 
 ## 📁 Project Structure
 
@@ -77,454 +77,448 @@ This system is a **comprehensive, production-ready Resume/CV Screening and Parsi
 HireAssist/
 ├── frontend/                          # React Application
 │   ├── src/
-│   │   ├── __tests__/
-│   │   │   └── App.test.tsx
 │   │   ├── api/
-│   │   │   └── resumeService.ts      # API service functions
+│   │   │   ├── resumeService.ts      # Resume API service
+│   │   │   ├── authService.ts        # Authentication service
+│   │   │   └── apiClient.ts          # Axios instance
 │   │   ├── components/
+│   │   │   ├── ResumeUpload.tsx      # Resume upload component
 │   │   │   ├── ApiStatus.tsx         # API health indicator
-│   │   │   ├── ResumeUpload.jsx      # Resume upload component
-│   │   │   └── ParserComparison/     # Parser comparison dashboard
-│   │   │       ├── ComparisonCard.tsx
-│   │   │       ├── ComparisonTable.tsx
-│   │   │       ├── ParserComparisonDashboard.tsx
-│   │   │       ├── PerformanceChart.tsx
-│   │   │       └── index.ts
+│   │   │   └── AuthForm.tsx          # Login/Register form
 │   │   ├── hooks/
 │   │   │   ├── useApiStatus.ts
-│   │   │   └── useParserComparison.ts
+│   │   │   └── useAuth.ts
 │   │   ├── pages/
-│   │   │   └── ParserComparisonPage.tsx
-│   │   ├── types/
-│   │   │   └── parser.ts
-│   │   ├── App.css
+│   │   │   ├── AuthPage.tsx
+│   │   │   ├── DashboardPage.tsx
+│   │   │   ├── ResumeManagementPage.tsx
+│   │   │   └── JobManagementPage.tsx
 │   │   ├── App.tsx
-│   │   ├── index.css
 │   │   └── main.tsx
-│   ├── .dockerignore
 │   ├── .env.example
+│   ├── .dockerignore
 │   ├── Dockerfile
-│   ├── index.html
-│   ├── package-lock.json
 │   ├── package.json
-│   ├── tailwind.config.js
 │   ├── tsconfig.json
 │   ├── vite.config.ts
-│   └── vitest.config.ts
+│   └── tailwind.config.js
+│
 ├── backend/                           # FastAPI Application
 │   ├── app/
-│   │   ├── api/
+│   │   ├── api/v1/
 │   │   │   ├── __init__.py
-│   │   │   └── v1/
-│   │   │       ├── __init__.py
-│   │   │       ├── auth.py
-│   │   │       ├── jobs.py
-│   │   │       ├── resumes.py
-│   │   │       ├── screening.py
-│   │   │       └── analytics.py
+│   │   │   ├── auth.py               # Authentication endpoints
+│   │   │   ├── resumes.py            # Resume upload/parse endpoints
+│   │   │   ├── candidates.py         # Candidate management
+│   │   │   ├── jobs.py               # Job management
+│   │   │   ├── matching.py           # Job matching endpoints
+│   │   │   ├── health.py             # Health check
+│   │   │   └── admin.py              # Admin endpoints
 │   │   ├── core/
-│   │   │   ├── __init__.py
 │   │   │   ├── config.py             # Settings from environment
-│   │   │   ├── database.py
-│   │   │   └── security.py
+│   │   │   ├── database.py           # Database connection
+│   │   │   ├── security.py           # JWT and auth
+│   │   │   └── middleware.py         # Error handling
 │   │   ├── models/
-│   │   │   ├── __init__.py
-│   │   │   ├── base.py               # Base model class
-│   │   │   ├── candidate.py
-│   │   │   ├── job.py
-│   │   │   ├── organization.py
-│   │   │   ├── resume.py
-│   │   │   ├── screening.py
-│   │   │   └── user.py
+│   │   │   ├── users.py              # User model
+│   │   │   ├── candidate.py          # Candidate profile
+│   │   │   ├── resume.py             # Resume storage
+│   │   │   ├── jobs.py               # Job postings
+│   │   │   ├── applications.py       # Job applications
+│   │   │   └── screening_results.py  # Screening scores
 │   │   ├── schemas/
-│   │   │   ├── __init__.py
-│   │   │   └── parser.py
+│   │   │   ├── auth.py               # Auth schemas
+│   │   │   └── resumes.py            # Resume schemas
 │   │   ├── services/
-│   │   │   ├── __init__.py
-│   │   │   ├── ai_service.py
-│   │   │   ├── matching_service.py
-│   │   │   ├── parser_nlp.py         # NLP parser (Parser A)
-│   │   │   ├── parser_regex.py       # Regex parser (Parser B)
-│   │   │   ├── rag_engine.py
-│   │   │   ├── resume_parser.py
-│   │   │   └── screening_service.py
-│   │   ├── utils/
-│   │   │   ├── __init__.py
-│   │   │   └── validators.py
-│   │   ├── __init__.py
-│   │   ├── dependencies.py
+│   │   │   ├── resumeparser.py       # Resume parsing logic
+│   │   │   ├── rag_resume_parser.py  # RAG parser (framework)
+│   │   │   └── skills.json           # Skills database
 │   │   └── main.py                   # Entry point
-│   ├── migrations/                   # Database migrations
-│   │   ├── env.py                    # Auto-reads from .env
+│   │
+│   ├── migrations/                   # Alembic database migrations
+│   │   ├── env.py
 │   │   ├── script.py.mako
 │   │   └── versions/
+│   │
 │   ├── tests/
-│   │   ├── __init__.py
 │   │   ├── test_health.py
-│   │   ├── test_parsers.py
-│   │   └── test_screening.py
-│   ├── .dockerignore
+│   │   ├── test_resume_parser.py
+│   │   └── test_integration_upload_parse.py
+│   │
+│   ├── uploads/                      # Resume file storage
 │   ├── .env.example
+│   ├── .dockerignore
 │   ├── Dockerfile
-│   ├── alembic.ini                   # Alembic configuration (at backend root)
-│   └── requirements.txt               # Cleaned Python dependencies
-├── .github/
-│   └── workflows/
-│       └── ci.yml                   # GitHub Actions CI/CD
-├── .env.example                      # Root environment template (Docker)
+│   ├── alembic.ini
+│   ├── requirements.txt
+│   └── requirements-dev.txt
+│
+├── .github/workflows/ci.yml           # GitHub Actions CI/CD
+├── docker-compose.yml                 # Development setup
+├── docker-compose.prod.yml            # Production setup
+├── nginx.conf                         # Nginx configuration
+├── .env.example                       # Root environment template
 ├── .gitignore
-├── docker-compose.prod.yml           # Production setup with Nginx
-├── docker-compose.yml                # Development setup
-├── nginx.conf                        # Nginx reverse proxy config
-├── docs/                            # Documentation
-├── scripts/                         # Deployment scripts
+├── LICENSE
 └── README.md
 ```
 
-## 🐳 Docker Setup
+---
+
+## 🚀 Quick Start Guide
 
 ### Prerequisites
-- Install [Docker](https://www.docker.com/products/docker-desktop)
-- Install [Docker Compose](https://docs.docker.com/compose/install/)
+- **Docker Desktop** (recommended) or Python 3.13+ & Node.js 18+
+- **PostgreSQL** (if running locally without Docker)
+- **Git**
 
-### Quick Start - Docker Development
+### 🐳 Docker Quick Start (Recommended)
 
 ```bash
 # 1. Clone repository
 git clone https://github.com/AshminDhungana/HireAssist.git
 cd HireAssist
 
-# 2. Create .env file from template
+# 2. Create environment file
 cp .env.example .env
 
-# 3. Start all services (PostgreSQL, Redis, Backend, Frontend)
+# 3. Start all services
 docker-compose up -d
 
-# 4. Wait for services to start (30 seconds)
+# 4. Wait for services to start
 sleep 30
 
-# 5. Run database migrations
-docker-compose exec backend alembic upgrade head
-
-# 6. Access applications
+# 5. Access applications
 # Frontend: http://localhost:3000
-# Backend: http://localhost:8000
-# API Docs: http://localhost:8000/docs
+# Backend API: http://localhost:8000
+# API Documentation: http://localhost:8000/api/docs
 
-# 7. View logs
-docker-compose logs -f backend
-docker-compose logs -f frontend
-
-# 8. Stop services
-docker-compose down
+# 6. Login with default credentials
+# Email: admin@hireassist.com
+# Password: AdminPassword123!
 ```
 
-### Environment Variables Configuration
+### 🖥️ Local Development (Without Docker)
 
-#### Root `.env` (docker-compose.yml reads this)
+#### Backend Setup
+```bash
+cd backend
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Download spaCy model
+python -m spacy download en_core_web_sm
+
+# Create .env file
+cp .env.example .env
+
+# Run database migrations
+alembic upgrade head
+
+# Start backend server
+uvicorn app.main:app --reload
+# Server runs on http://localhost:8000
+```
+
+#### Frontend Setup
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Create .env file
+cp .env.example .env.local
+
+# Start development server
+npm run dev
+# Application runs on http://localhost:5173
+```
+
+---
+
+## 🔑 Environment Variables
+
+### Root `.env` (Docker)
 ```env
-# Database
+# Database Configuration
 DB_USER=hireassist
-DB_PASSWORD=hireassist_dev_password
+DB_PASSWORD=secure_password_here
 DB_NAME=hireassist_db
-DATABASE_URL=postgresql://hireassist:hireassist_dev_password@postgres:5432/hireassist_db
-
-# Redis
-REDIS_URL=redis://redis:6379
+DATABASE_URL=postgresql://hireassist:secure_password_here@postgres:5432/hireassist_db
 
 # Security
-SECRET_KEY=dev_secret_key_change_in_production
+SECRET_KEY=your-secret-key-here-change-in-production
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-# API URLs
-FRONTEND_API_URL=http://localhost:3000
+# Debug Mode
+DEBUG=false
+
+# Redis (optional)
+REDIS_URL=redis://redis:6379
+```
+
+### Backend `backend/.env` (Local Development)
+```env
+# Database
+DATABASE_URL=postgresql://hireassist:password@localhost:5432/hireassist_db
+
+# Security
+SECRET_KEY=dev_secret_key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# File Upload
+UPLOAD_FOLDER=./uploads
+MAX_FILE_SIZE=10485760
+
+# OpenAI (optional)
+OPENAI_API_KEY=sk-your-key-here
 
 # Debug
 DEBUG=true
 ```
 
-#### Backend `backend/.env` (local development)
-```env
-DATABASE_URL=postgresql://hireassist:hireassist_dev_password@localhost:5432/hireassist_db
-REDIS_URL=redis://localhost:6379
-SECRET_KEY=dev_secret_key_change_in_production
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-UPLOAD_FOLDER=./uploads
-MAX_FILE_SIZE=10485760
-OPENAI_API_KEY=
-DEBUG=true
-```
-
-#### Frontend `frontend/.env.local` (local development)
+### Frontend `frontend/.env.local` (Local Development)
 ```env
 VITE_API_BASE_URL=http://localhost:8000
 VITE_APP_NAME=HireAssist
 VITE_DEBUG=true
 ```
 
-### Database Migrations with Alembic
+---
 
-**Key Point**: Alembic configuration (`alembic.ini`) is at `backend/alembic.ini` (backend root level)
+## 🗄️ Database Schema
 
-**Automatic Configuration**: `migrations/env.py` reads database URL from `.env` automatically!
+The system uses PostgreSQL with the following core tables:
 
-```bash
-# Create new migration (auto-detects schema changes)
-docker-compose exec backend alembic revision --autogenerate -m "Add users table"
-
-# Apply migrations
-docker-compose exec backend alembic upgrade head
-
-# Rollback one migration
-docker-compose exec backend alembic downgrade -1
-
-# View current revision
-docker-compose exec backend alembic current
-
-# View migration history
-docker-compose exec backend alembic history
-```
-
-**How it works:**
-1. `migrations/env.py` reads `DATABASE_URL` from `.env`
-2. Configuration is automatic - no manual editing needed
-3. Works seamlessly in Docker and local development
-
-## 🗄 Database Schema
-
-### Core Tables
+### Users & Authentication
 ```sql
--- Users and Authentication
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(50) NOT NULL, -- admin, recruiter, candidate
-    is_active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Organizations (Multi-tenant)
-CREATE TABLE organizations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(255) NOT NULL,
-    domain VARCHAR(100),
-    settings JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Job Postings
-CREATE TABLE jobs (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    organization_id UUID REFERENCES organizations(id),
-    title VARCHAR(255) NOT NULL,
-    description TEXT NOT NULL,
-    requirements TEXT,
-    location VARCHAR(255),
-    salary_range INT4RANGE,
-    status VARCHAR(50) DEFAULT 'active',
-    embedding VECTOR(1536),
-    created_by UUID REFERENCES users(id),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Candidates and Resumes
-CREATE TABLE candidates (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES users(id),
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    phone VARCHAR(50),
-    location VARCHAR(255),
-    summary TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE resumes (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    candidate_id UUID REFERENCES candidates(id),
-    filename VARCHAR(255) NOT NULL,
-    file_path VARCHAR(500) NOT NULL,
-    parsed_data JSONB,
-    raw_text TEXT,
-    embedding VECTOR(1536),
-    skills TEXT[],
-    experience_years INTEGER,
-    education_level VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Job Applications
-CREATE TABLE applications (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    job_id UUID REFERENCES jobs(id),
-    candidate_id UUID REFERENCES candidates(id),
-    resume_id UUID REFERENCES resumes(id),
-    status VARCHAR(50) DEFAULT 'submitted',
-    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Screening Results
-CREATE TABLE screening_results (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    application_id UUID REFERENCES applications(id),
-    overall_score DECIMAL(5,2),
-    skill_match_score DECIMAL(5,2),
-    experience_score DECIMAL(5,2),
-    education_score DECIMAL(5,2),
-    detailed_analysis JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+users (id, email, password_hash, role, is_approved, created_at)
 ```
 
-**Note:** This schema requires PostgreSQL with the `pgvector` extension enabled.
-
-## 🚀 Deployment Guide
-
-### Local Development (Without Docker)
-
-```bash
-# Backend setup
-cd backend
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-
-# Download spaCy model
-python -m spacy download en_core_web_sm
-
-# Create .env
-cp .env.example .env
-
-# Run migrations
-alembic upgrade head
-
-# Start backend
-uvicorn app.main:app --reload
-
-# Frontend setup (new terminal)
-cd frontend
-npm install
-cp .env.example .env.local
-npm run dev
+### Candidates & Resumes
+```sql
+candidates (id, user_id, name, email, phone, location, summary, created_at)
+resumes (id, candidate_id, filename, file_path, parsed_data, skills, experience_years, education_level, created_at)
 ```
 
-### Docker Development
-
-```bash
-# Start all services
-docker-compose up -d
-
-# Run migrations
-docker-compose exec backend alembic upgrade head
-
-# Stop services
-docker-compose down
+### Jobs & Applications
+```sql
+jobs (id, organization_id, title, description, requirements, location, status, created_at)
+applications (id, job_id, candidate_id, resume_id, status, applied_at)
 ```
 
-### Production Deployment
-
-```bash
-# Create production .env
-cp .env.example .env
-# Edit .env with production values
-
-# Build and deploy
-docker-compose -f docker-compose.prod.yml up -d
+### Screening Results
+```sql
+screening_results (id, application_id, overall_score, skill_match_score, experience_score, detailed_analysis, created_at)
 ```
+
+**Database Migrations** are managed with **Alembic** and run automatically on startup.
+
+---
 
 ## 📊 API Documentation
 
-### Health Check
-```
-GET /api/v1/health
-Response: { "status": "healthy", "message": "API is running" }
-```
-
 ### Authentication Endpoints
 ```
-POST /api/v1/auth/login
-POST /api/v1/auth/register
-POST /api/v1/auth/refresh
-POST /api/v1/auth/logout
+POST   /api/v1/auth/register         # Register new user
+POST   /api/v1/auth/login            # Login (returns JWT token)
+POST   /api/v1/auth/refresh          # Refresh token
+POST   /api/v1/auth/logout           # Logout
 ```
 
 ### Resume Management
 ```
-POST /api/v1/resumes/upload
-GET  /api/v1/resumes/{id}
-PUT  /api/v1/resumes/{id}
-DELETE /api/v1/resumes/{id}
+POST   /api/v1/resumes/upload        # Upload resume (requires auth)
+GET    /api/v1/resumes/list          # List user's resumes
+GET    /api/v1/resumes/{id}/details  # Get resume details
+POST   /api/v1/resumes/{id}/parse    # Parse resume
+DELETE /api/v1/resumes/{id}          # Delete resume
+```
+
+### Candidate Management
+```
+GET    /api/v1/candidates            # List candidates
+POST   /api/v1/candidates            # Create candidate profile
+GET    /api/v1/candidates/{id}       # Get candidate details
+PUT    /api/v1/candidates/{id}       # Update candidate
 ```
 
 ### Job Management
 ```
-POST /api/v1/jobs
-GET  /api/v1/jobs
-GET  /api/v1/jobs/{id}
-PUT  /api/v1/jobs/{id}
-DELETE /api/v1/jobs/{id}
+POST   /api/v1/jobs                  # Create job posting
+GET    /api/v1/jobs                  # List all jobs
+GET    /api/v1/jobs/{id}             # Get job details
+PUT    /api/v1/jobs/{id}             # Update job
+DELETE /api/v1/jobs/{id}             # Delete job
 ```
 
-### Screening & Matching
+### Health & Status
 ```
-POST /api/v1/screening/match
-GET  /api/v1/screening/results
-POST /api/v1/screening/bulk
+GET    /api/v1/health                # API health check
+GET    /                              # Root endpoint
 ```
+
+**Full API documentation available at**: `http://localhost:8000/api/docs` (Swagger UI)
+
+---
 
 ## 🧪 Testing
 
-### Backend Testing
+### Backend Tests
 ```bash
-docker-compose exec backend pytest tests/ -v
+cd backend
+
+# Run all tests
+pytest tests/ -v
+
+# Run specific test file
+pytest tests/test_resume_parser.py -v
+
+# Run with coverage
+pytest tests/ --cov=app
 ```
 
-### Frontend Testing
+### Frontend Tests
 ```bash
 cd frontend
+
+# Run tests
 npm test
+
+# Watch mode
+npm test -- --watch
 ```
 
-## ✨ Current Implementation Status
+---
 
-### 📋 In Progress
-- Resume parsing API endpoints
-- File upload handling
-- Database integration
+## 🚀 Deployment
 
-### 🔜 Planned
-- Advanced job matching algorithm
-- Vector database integration
+### Docker Production Deployment
+```bash
+# Build production images
+docker build -t hireassist-backend ./backend
+docker build -t hireassist-frontend ./frontend
+
+# Deploy with docker-compose
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### Cloud Deployment (AWS Example)
+```bash
+# Push to ECR
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account>.dkr.ecr.us-east-1.amazonaws.com
+
+# Tag and push
+docker tag hireassist-backend:latest <account>.dkr.ecr.us-east-1.amazonaws.com/hireassist-backend:latest
+docker push <account>.dkr.ecr.us-east-1.amazonaws.com/hireassist-backend:latest
+```
+
+---
+
+## 📋 Current Implementation Status
+
+### ✅ Completed Features (November 2025)
+- User authentication and JWT tokens
+- Resume upload and storage
+- Resume parsing with spaCy
+- Database schema and migrations
+- API endpoints for all core functionality
+- Docker containerization
+- Frontend login page
+- Resume upload component
+- Admin dashboard foundation
+
+### 🔄 In Progress
+- Resume parsing refinement
+- Frontend dashboard pages
+- Job matching algorithm
+- Candidate ranking system
+
+### 🔜 Next Phase (Planned)
+- Vector database integration (Pinecone/Qdrant)
+- Advanced semantic matching
+- RAG implementation
 - Multi-tenant support
-- Advanced analytics dashboard
+- Analytics dashboard
 - Mobile app
+- Advanced filtering and search
+
+---
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. **Fork** the repository
+2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+3. **Commit changes**: `git commit -m 'Add amazing feature'`
+4. **Push to branch**: `git push origin feature/amazing-feature`
+5. **Open a Pull Request**
+
+### Code Standards
+- Use **TypeScript** for frontend
+- Follow **PEP 8** for backend Python
+- Write tests for new features
+- Update documentation accordingly
+
+---
+
+## 📞 Support
+
+For issues, questions, or suggestions:
+- Open an issue on GitHub
+- Check existing issues for solutions
+- Review documentation in `/docs`
+
+---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the **MIT License** - see the LICENSE file for details.
+
+---
 
 ## 🙏 Acknowledgments
 
-- OpenAI for GPT models and embeddings
-- LangChain for RAG framework
-- FastAPI for the excellent web framework
-- React team for the frontend framework
-- spaCy for NLP capabilities
-- Docker for containerization
+- **FastAPI** - Modern web framework
+- **React** - Frontend library
+- **spaCy** - NLP capabilities
+- **SQLAlchemy** - ORM framework
+- **LangChain** - RAG framework
+- **Docker** - Containerization
+- **PostgreSQL** - Database
+- Open-source community
+
+---
+
+## 📈 Project Roadmap
+
+| Phase | Timeline | Features |
+|-------|----------|----------|
+| **Phase 1** | ✅ Complete | Core APIs, Auth, Resume Upload |
+| **Phase 2** | 🔄 In Progress | Resume Parsing, Dashboard UI |
+| **Phase 3** | 🔜 Q4 2025 | Job Matching, Vector DB |
+| **Phase 4** | 🔜 Q1 2026 | Multi-tenant, Analytics |
+| **Phase 5** | 🔜 Q2 2026 | Mobile App, Advanced AI |
 
 ---
 
 **Built with ❤️ for modern recruitment workflows**
 
-**Current Version**: 1.0.0 (Tasks 14-16 Complete)  
-**Last Updated**: October 31, 2025  
-**Status**: 🟢 Development Active
+**Current Version**: 1.0.0  
+**Last Updated**: November 1, 2025  
+**Status**: 🟢 Active Development
+
+---
+
+### Quick Links
+- 📖 [Technical Documentation](./docs/technical-docs.md)
+- 🚀 [Frontend Deployment Guide](./docs/frontend-deployment.md)
+- 💻 [Implementation Code](./docs/implementation-code.md)
+- 📋 [Implementation Roadmap](./docs/implementation_roadmap.json)

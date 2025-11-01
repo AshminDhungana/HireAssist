@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { uploadResume } from '../api/resumeService';
 import { Upload, Check, AlertCircle, Loader } from 'lucide-react';
@@ -58,9 +57,11 @@ function ResumeUpload() {
 
     try {
       const data = await uploadResume(file);
+      console.log('Upload response:', data); // Debug log
       
-      if (data.success) {
-        setMessage(data.message || '✅ Resume uploaded successfully!');
+      // Service transforms response to: { success, message, data: { id, filename } }
+      if (data.success && data.message) {
+        setMessage('✅ Resume uploaded successfully!');
         setMessageType('success');
         setFile(null);
         
@@ -69,14 +70,20 @@ function ResumeUpload() {
           setMessage('');
           setMessageType('');
         }, 5000);
+      } else if (data.error) {
+        // Error from service
+        setMessage(`❌ ${data.error}`);
+        setMessageType('error');
       } else {
-        setMessage(`❌ ${data.error || 'Upload failed'}`);
+        // Unexpected response
+        setMessage('❌ Upload failed - unexpected response');
         setMessageType('error');
       }
     } catch (err) {
       const errorMessage = err instanceof Error 
         ? err.message 
         : 'Upload failed. Please try again.';
+      console.error('Upload error:', err); // Debug log
       setMessage(`❌ ${errorMessage}`);
       setMessageType('error');
     } finally {

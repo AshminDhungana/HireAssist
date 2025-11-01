@@ -7,12 +7,14 @@ from fastapi.responses import JSONResponse
 from app.services.resumeparser import FileParseError
 from app.core.middleware import global_error_handler
 from app.models.users import User
-from app.core.security import hash_password
+from app.core.security import get_password_hash
 from sqlalchemy import select
 import logging
 import asyncio
 import uuid
+from app.api.v1 import admin
 from datetime import datetime
+
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +38,7 @@ async def create_superuser_admin():
             admin_user = User(
                 id=uuid.uuid4(),
                 email='admin@hireassist.com',
-                password_hash=hash_password('AdminPassword123!'),
+                password_hash=get_password_hash('AdminPassword123!'),
                 first_name='Admin',
                 last_name='User',
                 role='admin',
@@ -142,6 +144,8 @@ app.include_router(candidates.router, prefix="/api/v1", tags=["candidates"])
 app.include_router(health.router, prefix="/api/v1", tags=["health"])
 app.include_router(jobs.router, prefix="/api/v1/jobs", tags=["jobs"])
 app.include_router(matching.router, prefix="/api/v1/matching", tags=["matching"])
+app.include_router(admin.router, prefix="/api/v1", tags=["admin"])
+
 
 
 # ========== EXCEPTION HANDLERS ==========

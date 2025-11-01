@@ -24,6 +24,8 @@ api.interceptors.request.use((config) => {
 interface UploadResponse {
   success: boolean
   message?: string
+  resume_id?: string
+  filename?: string
   data?: {
     id: string
     filename: string
@@ -32,14 +34,14 @@ interface UploadResponse {
   error?: string
 }
 
-// ========== EXISTING FUNCTIONS ==========
+// ========== RESUME FUNCTIONS ==========
 
 export const uploadResume = async (file: File): Promise<UploadResponse> => {
   try {
     const formData = new FormData()
     formData.append('file', file)
 
-    const response = await api.post<UploadResponse>(
+    const response = await api.post(
       `/api/v1/resumes/upload`,
       formData,
       {
@@ -49,21 +51,34 @@ export const uploadResume = async (file: File): Promise<UploadResponse> => {
       }
     )
 
-    return response.data
+    console.log('Raw backend response:', response.data)
+
+    // Transform backend response to match frontend expectations
+    // Backend returns: { message, resume_id, filename }
+    // Frontend expects: { success, message, data: { id, filename } }
+    return {
+      success: true,
+      message: response.data.message,
+      resume_id: response.data.resume_id,
+      filename: response.data.filename,
+      data: {
+        id: response.data.resume_id,
+        filename: response.data.filename,
+        parsedData: {},
+      }
+    }
   } catch (error) {
+    console.error('Upload error:', error)
     if (axios.isAxiosError(error)) {
       return {
         success: false,
-        error: error.response?.data?.error || 'Upload failed',
+        error: error.response?.data?.detail || error.message || 'Upload failed',
       }
     }
     throw error
   }
 }
 
-// ========== NEW FUNCTIONS (ADD THESE) ==========
-
-// NEW 1: List all resumes for user
 export const listResumes = async () => {
   try {
     const response = await api.get('/api/v1/resumes/list')
@@ -82,7 +97,6 @@ export const listResumes = async () => {
   }
 }
 
-// NEW 2: Get resume details with parsed data
 export const getResumeDetails = async (resumeId: string) => {
   try {
     const response = await api.get(`/api/v1/resumes/${resumeId}/details`)
@@ -101,7 +115,6 @@ export const getResumeDetails = async (resumeId: string) => {
   }
 }
 
-// NEW 3: Delete a resume
 export const deleteResume = async (resumeId: string) => {
   try {
     const response = await api.delete(`/api/v1/resumes/${resumeId}`)

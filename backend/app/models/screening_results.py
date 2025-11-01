@@ -7,7 +7,7 @@ from app.core.database import Base
 class ScreeningResult(Base):
     __tablename__ = "screening_results"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    application_id = Column(UUID(as_uuid=True), ForeignKey("applications.id"))
+    application_id = Column(UUID(as_uuid=True),  nullable=True)
     overall_score = Column(Numeric(5, 2))
     skill_match_score = Column(Numeric(5, 2))
     experience_score = Column(Numeric(5, 2))
