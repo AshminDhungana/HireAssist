@@ -20,15 +20,16 @@ export default function App() {
 
   // Check if user is already logged in on mount
   useEffect(() => {
-    const token = localStorage.getItem('access_token')
+    const _token = localStorage.getItem('access_token')
     const userData = localStorage.getItem('user')
-    if (token && userData) {
+    if (_token && userData) {
       setIsAuthenticated(true)
       setUser(JSON.parse(userData))
     }
   }, [])
 
   const handleLoginSuccess = (token: string, userData: any) => {
+    localStorage.setItem('access_token', token);
     setIsAuthenticated(true)
     setUser(userData)
     setCurrentPage('home')

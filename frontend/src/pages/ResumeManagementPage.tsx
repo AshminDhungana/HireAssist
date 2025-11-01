@@ -160,7 +160,7 @@ export default function ResumeManagementPage() {
                         </Badge>
                       ))}
                       {resume.skills.length > 5 && (
-                        <Badge variant="secondary">
+                        <Badge variant="primary">
                           +{resume.skills.length - 5} more
                         </Badge>
                       )}
