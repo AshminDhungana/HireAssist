@@ -29,14 +29,14 @@ export default function SkillsAutocomplete({
     setQuery(value)
     
     if (value.length < 2) {
-      setSuggestions([])
+      setSuggestions(allSkills)
       return
     }
 
     const result = await skillsService.searchSkills(value)
     if (result.success) {
       setSuggestions(
-        result.data.filter(s => !selectedSkills.includes(s))
+        result.data.filter((s: string) => !selectedSkills.includes(s))
       )
     }
   }
