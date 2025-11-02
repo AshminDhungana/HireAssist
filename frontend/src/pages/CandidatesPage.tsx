@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Button, Input, Select, Card, Modal, Badge } from '../components/ui'
 import { candidateService } from '../services/candidateService'
+import { listResumes } from '../api/resumeService'
 
 interface Candidate {
   id: string
@@ -14,6 +15,15 @@ interface Candidate {
   lastUpdate: string
 }
 
+interface Resume {
+  id: string
+  filename: string
+  skills: string[]
+  experience_years?: number
+  education_level?: string
+  created_at?: string
+}
+
 export default function CandidatesPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [loading, setLoading] = useState(true)
@@ -25,6 +35,11 @@ export default function CandidatesPage() {
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([])
   const [skip, setSkip] = useState(0)
   const [limit] = useState(20)
+  
+  // ✅ NEW: State for viewing resumes
+  const [candidateResumes, setCandidateResumes] = useState<Resume[]>([])
+  const [loadingResumes, setLoadingResumes] = useState(false)
+  const [showResumeModal, setShowResumeModal] = useState(false)
 
   // Load candidates from backend
   useEffect(() => {
@@ -46,8 +61,8 @@ export default function CandidatesPage() {
           phone: c.phone || 'N/A',
           location: c.location || 'N/A',
           resumesCount: c.resume_count || 0,
-          status: 'active' as const, // Default status (you can update via API later)
-          appliedJobs: 0, // This would come from applications table if available
+          status: 'active' as const,
+          appliedJobs: 0,
           lastUpdate: new Date().toISOString().split('T')[0],
         }))
         setCandidates(transformedCandidates)
@@ -60,6 +75,43 @@ export default function CandidatesPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // ✅ NEW: Load candidate's resumes
+  const loadCandidateResumes = async (candidateId: string) => {
+    setLoadingResumes(true)
+    try {
+      const result = await listResumes()
+      if (result.success && result.data) {
+        // Filter resumes for this candidate
+        const filtered = result.data.resumes.filter(
+          (r: any) => r.candidate_id === candidateId
+        )
+        setCandidateResumes(filtered)
+        setShowResumeModal(true)
+      } else {
+        alert('Failed to load resumes')
+      }
+    } catch (err) {
+      alert('Error loading resumes')
+      console.error(err)
+    } finally {
+      setLoadingResumes(false)
+    }
+  }
+
+  // ✅ NEW: Download resume
+  const handleDownloadResume = (resume: Resume) => {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+    const downloadUrl = `${API_BASE_URL}/api/v1/resumes/${resume.id}/download`
+    
+    const link = document.createElement('a')
+    link.href = downloadUrl
+    link.download = resume.filename
+    link.target = '_blank'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   const filteredCandidates = candidates.filter((c) => {
@@ -114,7 +166,6 @@ export default function CandidatesPage() {
 
   const handleDeleteCandidate = async (candidateId: string) => {
     if (window.confirm('Are you sure you want to delete this candidate?')) {
-      // Delete via API if needed
       setCandidates(candidates.filter((c) => c.id !== candidateId))
     }
   }
@@ -339,7 +390,7 @@ export default function CandidatesPage() {
         )}
       </Card>
 
-      {/* Candidate Detail Modal */}
+      {/* ✅ Candidate Detail Modal */}
       <Modal
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
@@ -404,13 +455,85 @@ export default function CandidatesPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3 pt-4">
-              <Button variant="primary">📄 View Resume</Button>
-              <Button variant="secondary" onClick={() => setIsDetailModalOpen(false)}>
+              {/* ✅ NOW WITH ONCLICK */}
+              <Button 
+                variant="primary"
+                onClick={() => loadCandidateResumes(selectedCandidate.id)}
+              >
+                📄 View Resume
+              </Button>
+              <Button 
+                variant="secondary" 
+                onClick={() => setIsDetailModalOpen(false)}
+              >
                 Close
               </Button>
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* ✅ NEW: Resume Modal */}
+      <Modal
+        isOpen={showResumeModal}
+        onClose={() => setShowResumeModal(false)}
+        title="📄 Candidate Resumes"
+      >
+        <div className="space-y-4">
+          {loadingResumes ? (
+            <div className="text-center py-8 text-gray-500">Loading resumes...</div>
+          ) : candidateResumes.length > 0 ? (
+            <div className="space-y-3">
+              {candidateResumes.map((resume) => (
+                <div 
+                  key={resume.id} 
+                  className="border rounded-lg p-3 hover:bg-gray-50 transition"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">{resume.filename}</p>
+                      {resume.skills && resume.skills.length > 0 && (
+                        <p className="text-xs text-gray-600 mt-1">
+                          Skills: {resume.skills.slice(0, 3).join(', ')}
+                          {resume.skills.length > 3 && `...+${resume.skills.length - 3}`}
+                        </p>
+                      )}
+                      {resume.experience_years && (
+                        <p className="text-xs text-gray-600">
+                          {resume.experience_years} years experience
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    {/* ✅ DOWNLOAD BUTTON */}
+                    <Button 
+                      size="sm"
+                      variant="primary"
+                      onClick={() => handleDownloadResume(resume)}
+                    >
+                      ⬇️ Download
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              No resumes found for this candidate
+            </div>
+          )}
+
+          <div className="pt-4 border-t">
+            <Button 
+              variant="secondary" 
+              className="w-full"
+              onClick={() => setShowResumeModal(false)}
+            >
+              Close
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   )

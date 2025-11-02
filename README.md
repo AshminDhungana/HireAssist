@@ -219,6 +219,7 @@ cp .env.example .env
 
 # Run database migrations
 alembic upgrade head
+(Change sqlalchemy.url in alembic.ini if necessary)
 
 # Start backend server
 uvicorn app.main:app --reload

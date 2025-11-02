@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button, Input, Card } from '../components/ui'
+import ApiStatus from '../components/ApiStatus'
 import axios from 'axios'
 
 interface AuthPageProps {
@@ -114,6 +115,11 @@ export default function AuthPage({ onLoginSuccess }: AuthPageProps) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 p-4">
+      {/* ✅ API Status Button - Top Right */}
+      <div className="fixed top-4 right-4 z-50">
+        <ApiStatus />
+      </div>
+
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-5xl font-black text-white mb-2 drop-shadow-lg">

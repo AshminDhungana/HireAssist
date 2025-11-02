@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Button, Card, Badge } from '../components/ui'
-import { listResumes, uploadResume, deleteResume } from '../api/resumeService'
+import { listResumes, uploadResume, deleteResume, getResumeDetails } from '../api/resumeService'
 
 interface Resume {
   id: string
@@ -11,11 +11,24 @@ interface Resume {
   created_at?: string
 }
 
+interface ResumeDetails {
+  id: string
+  filename: string
+  file_path: string
+  parsed_data?: Record<string, any>
+  skills?: string[]
+  experience_years?: number
+  education_level?: string
+  created_at?: string
+}
+
 export default function ResumeManagementPage() {
   const [resumes, setResumes] = useState<Resume[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [selectedResume, setSelectedResume] = useState<ResumeDetails | null>(null)
+  const [showModal, setShowModal] = useState(false)
 
   useEffect(() => {
     loadResumes()
@@ -37,6 +50,36 @@ export default function ResumeManagementPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleViewResume = async (resumeId: string) => {
+    try {
+      const result = await getResumeDetails(resumeId)
+      if (result.success) {
+        setSelectedResume(result.data)
+        setShowModal(true)
+      } else {
+        alert(result.error || 'Failed to load resume details')
+      }
+    } catch (err) {
+      alert('Error loading resume')
+      console.error(err)
+    }
+  }
+
+  const handleDownloadResume = (resume: ResumeDetails) => {
+    // Get the file path from backend
+    const filePath = resume.file_path
+    const downloadUrl = `${import.meta.env.VITE_API_BASE_URL}/${filePath}`
+    
+    // Create a temporary link and trigger download
+    const link = document.createElement('a')
+    link.href = downloadUrl
+    link.download = resume.filename
+    link.target = '_blank'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   const handleFileUpload = async (file: File) => {
@@ -175,9 +218,16 @@ export default function ResumeManagementPage() {
                 )}
 
                 <div className="flex gap-2">
-                  <Button variant="secondary" size="sm">
+                  {/* ✅ VIEW BUTTON - NOW WORKS! */}
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={() => handleViewResume(resume.id)}
+                  >
                     👁️ View
                   </Button>
+                  
+                  {/* DELETE BUTTON */}
                   <Button
                     onClick={() => handleDelete(resume.id)}
                     variant="danger"
@@ -195,6 +245,88 @@ export default function ResumeManagementPage() {
           </div>
         )}
       </Card>
+
+      {/* ✅ MODAL - VIEW RESUME DETAILS */}
+      {showModal && selectedResume && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-2xl font-bold text-gray-900">
+                📄 {selectedResume.filename}
+              </h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Resume Details */}
+            <div className="space-y-4 mb-6">
+              {selectedResume.experience_years && (
+                <div>
+                  <p className="text-sm font-semibold text-gray-600">Experience</p>
+                  <p className="text-lg text-gray-900">
+                    {selectedResume.experience_years} years
+                  </p>
+                </div>
+              )}
+
+              {selectedResume.education_level && (
+                <div>
+                  <p className="text-sm font-semibold text-gray-600">Education</p>
+                  <p className="text-lg text-gray-900">
+                    {selectedResume.education_level}
+                  </p>
+                </div>
+              )}
+
+              {selectedResume.skills && selectedResume.skills.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold text-gray-600 mb-2">Skills</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedResume.skills.map((skill, i) => (
+                      <Badge key={i} variant="primary">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedResume.parsed_data && (
+                <div>
+                  <p className="text-sm font-semibold text-gray-600 mb-2">
+                    Parsed Data
+                  </p>
+                  <pre className="bg-gray-100 p-3 rounded text-xs overflow-auto">
+                    {JSON.stringify(selectedResume.parsed_data, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              <Button
+                onClick={() => handleDownloadResume(selectedResume)}
+                variant="primary"
+                size="sm"
+              >
+                ⬇️ Download
+              </Button>
+              <Button
+                onClick={() => setShowModal(false)}
+                variant="secondary"
+                size="sm"
+              >
+                Close
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }

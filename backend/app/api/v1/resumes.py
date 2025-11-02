@@ -15,7 +15,7 @@ from app.core.config import settings
 import uuid
 
 router = APIRouter(prefix="/resumes", tags=["resumes"])
-
+logger = logging.getLogger(__name__)
 
 ALLOWED_MIME_TYPES = ["application/pdf", 
                       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
@@ -32,8 +32,9 @@ async def upload_resume(
     authorization: str = Header(None),
     db: AsyncSession = Depends(get_db)
 ):
-    # ===== AUTHENTICATION =====
+    """Upload and parse resume with skills standardization"""
     
+    # ===== AUTHENTICATION =====
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -70,29 +71,25 @@ async def upload_resume(
         candidate = Candidate(
             id=uuid.uuid4(),
             user_id=uuid.UUID(user_id) if isinstance(user_id, str) else user_id,
-            name="Candidate",  # ← ADD DEFAULT NAME
-            email="candidate@example.com"  # ← ADD DEFAULT EMAIL
+            name="Candidate",
+            email="candidate@example.com"
         )
         db.add(candidate)
         await db.commit()
         await db.refresh(candidate)
 
- 
     # ===== VALIDATION =====
-    # Allow None content_type for PDFs (sometimes not detected)
     if file.content_type and file.content_type not in ALLOWED_MIME_TYPES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Unsupported file type: {file.content_type}"
         )
     
-    # Check file extension instead
     if not file.filename.lower().endswith(('.pdf', '.docx')):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only PDF and DOCX files are allowed"
         )
-
 
     contents = await file.read()
     if len(contents) > MAX_FILE_SIZE_MB * 1024 * 1024:
@@ -108,23 +105,60 @@ async def upload_resume(
     with open(save_path, "wb") as f:
         f.write(contents)
 
+    # ===== PARSE RESUME =====
+    try:
+        parser = ResumeParser()
+        
+        # Determine mimetype
+        if filename.lower().endswith('.pdf'):
+            mimetype = 'application/pdf'
+        else:
+            mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        
+        # Parse resume (skills will be standardized in parser)
+        parsed_data = parser.parse_resume(save_path, mimetype)
+        
+        logger.info(f"Resume parsed successfully. Skills: {parsed_data.get('skills', [])}")
+        
+    except FileParseError as e:
+        os.remove(save_path)  # Clean up on error
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        os.remove(save_path)  # Clean up on error
+        logger.exception(f"Failed to parse resume: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to parse resume"
+        )
+
     # ===== SAVE TO DATABASE =====
     resume = Resume(
         id=uuid.uuid4(),
         candidate_id=candidate.id,
         filename=filename,
         file_path=save_path,
+        parsed_data=parsed_data,
+        raw_text=parsed_data.get('raw_text'),
+        skills=parsed_data.get('skills', []),  # ✅ NOW STANDARDIZED!
+        experience_years=parsed_data.get('experience_years'),
+        education_level=extract_education_level(parsed_data.get('education', []))
     )
     db.add(resume)
     await db.commit()
     await db.refresh(resume)
 
+    logger.info(f"Resume saved with ID: {resume.id}, Standardized Skills: {resume.skills}")
+
     return {
         "message": "Resume uploaded successfully",
         "resume_id": str(resume.id),
-        "filename": filename
+        "filename": filename,
+        "skills": resume.skills,  # ✅ Return standardized skills
+        "parsed_data": parsed_data
     }
-
 
 
 @router.post("/{resume_id}/parse", response_model=ParseResumeResponse)
@@ -134,6 +168,8 @@ async def parse_resume(
     authorization: str = Header(None),
     db: AsyncSession = Depends(get_db)
 ):
+    """Parse resume with optional detailed extraction"""
+    
     # Validate auth token
     if not authorization:
         raise HTTPException(
@@ -149,7 +185,7 @@ async def parse_resume(
         user_id = decode_token(token)
         if not user_id:
             raise ValueError("Invalid token")
-        # Validate the token subject is a UUID string; otherwise reject early to avoid DB errors
+        # Validate the token subject is a UUID string
         try:
             user_uuid = uuid.UUID(user_id)
         except Exception:
@@ -189,7 +225,7 @@ async def parse_resume(
             detail="Resume file not found on disk"
         )
 
-    # Determine mimetype from filename with additional validation
+    # Determine mimetype from filename
     filename = (resume_record.filename or "").lower()
     if filename.endswith('.pdf'):
         mimetype = 'application/pdf'
@@ -210,14 +246,16 @@ async def parse_resume(
         try:
             rag_parser = RAGResumeParser()
             parsed = rag_parser.parse_resume(filepath, mimetype)
+            logger.info("RAG parser used successfully")
         except Exception as e:
-            logger.warning("RAG parser failed: %s", str(e))
+            logger.warning(f"RAG parser failed: {str(e)}")
             parsed = None
 
     # Use spaCy parser if RAG failed or not requested
     if not parsed or not parsed.get('skills'):
         try:
             parsed = spacy_parser.parse_resume(filepath, mimetype)
+            logger.info(f"spaCy parser used. Skills: {parsed.get('skills', [])}")
         except FileParseError as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -227,11 +265,20 @@ async def parse_resume(
                     "filename": resume_record.filename
                 }
             )
+    
+    # ✅ STANDARDIZE SKILLS (Extra safety layer)
+    if parsed and parsed.get('skills'):
+        try:
+            parsed['skills'] = spacy_parser.skills_standardizer.standardize_skills(
+                parsed['skills']
+            )
+            logger.info(f"Skills standardized: {parsed['skills']}")
+        except Exception as e:
+            logger.warning(f"Skills standardization failed: {e}")
         
     # Enrich parse results if detailed extraction requested
     if parse_options.extract_detailed:
         try:
-            # Attempt more detailed parsing of experience and education
             detailed_exp = spacy_parser.extract_experience(parsed.get('raw_text', ''))
             detailed_edu = spacy_parser.extract_education(parsed.get('raw_text', ''))
             
@@ -239,41 +286,42 @@ async def parse_resume(
                 parsed['experience'] = detailed_exp
             if detailed_edu:
                 parsed['education'] = detailed_edu
+                
+            logger.info(f"Detailed extraction completed. Experience: {len(detailed_exp)}, Education: {len(detailed_edu)}")
         except Exception as e:
-            logger.warning("Detailed extraction failed: %s", str(e))
+            logger.warning(f"Detailed extraction failed: {str(e)}")
 
-    # Persist parsed results to DB with improved error handling
+    # Persist parsed results to DB
     try:
         # Update resume record with parsed data
         resume_record.parsed_data = parsed
         resume_record.raw_text = parsed.get('raw_text')
         
-        # Normalize and validate fields before saving
+        # Normalize and validate skills
         if isinstance(parsed.get('skills'), list):
             resume_record.skills = [s for s in parsed['skills'] if isinstance(s, str)]
         else:
             resume_record.skills = None
             
+        # Save experience years
         experience_years = parsed.get('experience_years')
         if isinstance(experience_years, (int, float)):
             resume_record.experience_years = int(experience_years)
             
-        # Extract education level from structured data
+        # Extract education level
         education = parsed.get('education', [])
-        if isinstance(education, list) and education:
-            if isinstance(education[0], dict):
-                resume_record.education_level = education[0].get('degree')
-            else:
-                resume_record.education_level = str(education[0])
+        resume_record.education_level = extract_education_level(education)
                 
         # Save changes
         db.add(resume_record)
         await db.commit()
         await db.refresh(resume_record)
         
+        logger.info(f"Resume {resume_id} parsed and saved. Skills: {resume_record.skills}")
+        
     except Exception as e:
         await db.rollback()
-        logger.exception("Failed to save parsed resume: %s", e)
+        logger.exception(f"Failed to save parsed resume: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
@@ -295,7 +343,6 @@ async def parse_resume(
         ]
         parsed['confidence_score'] = round(sum(1 for f in required_fields if f) / len(required_fields), 2)
 
-    # Return parsed data through Pydantic validation
     return ParseResumeResponse(**parsed)
 
 
@@ -304,7 +351,7 @@ async def list_resumes(
     authorization: str = Header(None),
     db: AsyncSession = Depends(get_db)
 ):
-    """List all resumes for authenticated user"""
+    """List all resumes for authenticated user with standardized skills"""
     if not authorization:
         raise HTTPException(status_code=401, detail="Authorization required")
     
@@ -335,9 +382,10 @@ async def list_resumes(
             {
                 "id": str(r.id),
                 "filename": r.filename,
-                "skills": r.skills or [],
+                "skills": r.skills or [],  # ✅ Already standardized
                 "experience_years": r.experience_years,
-                "education_level": r.education_level
+                "education_level": r.education_level,
+                "created_at": r.created_at.isoformat() if r.created_at else None
             }
             for r in resumes
         ]
@@ -350,7 +398,7 @@ async def get_resume_details(
     authorization: str = Header(None),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get detailed resume information"""
+    """Get detailed resume information with standardized skills"""
     if not authorization:
         raise HTTPException(status_code=401, detail="Authorization required")
     
@@ -378,10 +426,52 @@ async def get_resume_details(
         "filename": resume.filename,
         "parsed_data": resume.parsed_data,
         "raw_text": resume.raw_text,
-        "skills": resume.skills,
+        "skills": resume.skills or [],  # ✅ Standardized
         "experience_years": resume.experience_years,
-        "education_level": resume.education_level
+        "education_level": resume.education_level,
+        "created_at": resume.created_at.isoformat() if resume.created_at else None
     }
+
+
+@router.get("/{resume_id}/download")
+async def download_resume(
+    resume_id: str,
+    authorization: str = Header(None),
+    db: AsyncSession = Depends(get_db)
+):
+    """Download a resume file"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization required")
+    
+    parts = authorization.split()
+    user_id = decode_token(parts[1])
+    
+    try:
+        rid = uuid.UUID(resume_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid resume ID")
+    
+    result = await db.execute(
+        select(Resume)
+        .join(Candidate)
+        .where(Resume.id == rid, Candidate.user_id == user_id)
+    )
+    resume = result.scalars().first()
+    
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    file_path = resume.file_path
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # Return file download
+    from fastapi.responses import FileResponse
+    return FileResponse(
+        path=file_path,
+        filename=resume.filename,
+        media_type='application/octet-stream'
+    )
 
 
 @router.delete("/{resume_id}")
@@ -416,6 +506,7 @@ async def delete_resume(
     if resume.file_path and os.path.exists(resume.file_path):
         try:
             os.remove(resume.file_path)
+            logger.info(f"Deleted file: {resume.file_path}")
         except Exception as e:
             logger.warning(f"Failed to delete file: {e}")
     
@@ -423,4 +514,24 @@ async def delete_resume(
     await db.delete(resume)
     await db.commit()
     
-    return {"message": "Resume deleted"}
+    logger.info(f"Resume deleted: {resume_id}")
+    
+    return {"message": "Resume deleted successfully"}
+
+
+# ========== HELPER FUNCTIONS ==========
+
+def extract_education_level(education: List[dict]) -> str:
+    """Extract education level from education entries"""
+    if not education or not isinstance(education, list):
+        return None
+    
+    try:
+        if isinstance(education[0], dict):
+            degree = education[0].get('degree', '')
+        else:
+            degree = str(education[0])
+        
+        return degree if degree else None
+    except Exception:
+        return None
