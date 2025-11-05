@@ -1,0 +1,150 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-8.4.2, pluggy-1.6.0 -- E:\Projects\HireAssist\backend\venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: E:\Projects\HireAssist\backend
+plugins: anyio-4.11.0, langsmith-0.4.38, asyncio-1.2.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 46 items
+
+tests/test_enhanced_endpoints.py::test_parse_resume_endpoint_success PASSED [  2%]
+tests/test_enhanced_endpoints.py::test_parse_resume_unauthorized FAILED  [  4%]
+tests/test_enhanced_endpoints.py::test_parse_resume_invalid_token PASSED [  6%]
+tests/test_enhanced_endpoints.py::test_parse_resume_not_found PASSED     [  8%]
+tests/test_enhanced_endpoints.py::test_parse_resume_file_error PASSED    [ 10%]
+tests/test_enhanced_endpoints.py::test_parse_resume_with_rag PASSED      [ 13%]
+tests/test_enhanced_endpoints.py::test_global_error_handler PASSED       [ 15%]
+tests/test_enhanced_parser.py::test_experience_extraction PASSED         [ 17%]
+tests/test_enhanced_parser.py::test_education_extraction PASSED          [ 19%]
+tests/test_enhanced_parser.py::test_confidence_scoring PASSED            [ 21%]
+tests/test_enhanced_parser.py::test_schema_validation PASSED             [ 23%]
+tests/test_enhanced_parser.py::test_error_handling PASSED                [ 26%]
+tests/test_enhanced_parser.py::test_detailed_extraction PASSED           [ 28%]
+tests/test_enhanced_parser.py::test_spacy_ner_enrichment PASSED          [ 30%]
+tests/test_enhanced_parser.py::test_docx_parsing PASSED                  [ 32%]
+tests/test_enhanced_parser.py::test_skill_aliases_and_typos_extraction PASSED [ 34%]
+tests/test_health.py::test_health_check PASSED                           [ 36%]
+tests/test_health.py::test_api_response_structure PASSED                 [ 39%]
+tests/test_integration_parse.py::test_run_parse_script_runs_and_exits_zero SKIPPED [ 41%]
+tests/test_integration_upload_parse.py::test_upload_and_parse_flow_integration SKIPPED [ 43%]
+tests/test_ranking.py::test_calculate_skill_match_basic PASSED           [ 45%]
+tests/test_ranking.py::test_experience_score_tiers PASSED                [ 47%]
+tests/test_ranking.py::test_education_score_levels PASSED                [ 50%]
+tests/test_ranking.py::test_overall_score_weighting PASSED               [ 52%]
+tests/test_resume_parser.py::test_rule_based_parser_happy_path PASSED    [ 54%]
+tests/test_skills.py::test_normalize_py_and_js PASSED                    [ 56%]
+tests/test_skills.py::test_multiword_skill_detection PASSED              [ 58%]
+tests/test_skills.py::test_no_false_positives_on_empty_text PASSED       [ 60%]
+tests/test_skills_comprehensive.py::TestSkillsDatabase::test_database_exists PASSED [ 63%]
+tests/test_skills_comprehensive.py::TestSkillsDatabase::test_database_has_required_categories PASSED [ 65%]
+tests/test_skills_comprehensive.py::TestSkillsDatabase::test_each_category_has_skills PASSED [ 67%]
+tests/test_skills_comprehensive.py::TestSkillsDatabase::test_total_skills_count PASSED [ 69%]
+tests/test_skills_comprehensive.py::TestSkillsDatabase::test_no_duplicate_skills_in_category PASSED [ 71%]
+tests/test_skills_comprehensive.py::TestSkillExtraction::test_extract_programming_languages PASSED [ 73%]
+tests/test_skills_comprehensive.py::TestSkillExtraction::test_extract_frameworks PASSED [ 76%]
+tests/test_skills_comprehensive.py::TestSkillExtraction::test_extract_databases PASSED [ 78%]
+tests/test_skills_comprehensive.py::TestSkillExtraction::test_extract_cloud_tools PASSED [ 80%]
+tests/test_skills_comprehensive.py::TestSkillExtraction::test_normalize_skill_abbreviations PASSED [ 82%]
+tests/test_skills_comprehensive.py::TestSkillExtraction::test_no_false_positives_common_words PASSED [ 84%]
+tests/test_skills_comprehensive.py::TestSkillExtraction::test_extract_from_empty_text PASSED [ 86%]
+tests/test_skills_comprehensive.py::TestSkillExtraction::test_extract_from_whitespace_only PASSED [ 89%]
+tests/test_skills_comprehensive.py::TestSkillIntegration::test_full_resume_skill_extraction PASSED [ 91%]
+tests/test_skills_comprehensive.py::TestSkillIntegration::test_skill_extraction_from_experience_section PASSED [ 93%]
+tests/test_skills_comprehensive.py::TestSkillIntegration::test_skill_deduplication PASSED [ 95%]
+tests/test_skills_comprehensive.py::TestSkillNormalization::test_case_insensitive_extraction PASSED [ 97%]
+tests/test_skills_comprehensive.py::TestSkillNormalization::test_multiword_skill_detection PASSED [100%]
+
+================================== FAILURES ===================================
+_______________________ test_parse_resume_unauthorized ________________________
+tests\test_enhanced_endpoints.py:150: in test_parse_resume_unauthorized
+    assert response.status_code == 401
+E   assert 422 == 401
+E    +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+---------------------------- Captured stderr call -----------------------------
+2025-11-05 17:54:20,689 - app.core.middleware - INFO - access log
+2025-11-05 17:54:20,691 - httpx - INFO - HTTP Request: POST http://test/api/v1/resumes/some-id/parse "HTTP/1.1 422 Unprocessable Entity"
+------------------------------ Captured log call ------------------------------
+INFO     app.core.middleware:middleware.py:41 access log
+INFO     httpx:_client.py:1740 HTTP Request: POST http://test/api/v1/resumes/some-id/parse "HTTP/1.1 422 Unprocessable Entity"
+============================== warnings summary ===============================
+app\core\config.py:4
+  E:\Projects\HireAssist\backend\app\core\config.py:4: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Settings(BaseSettings):
+
+app\schemas\auth.py:13
+  E:\Projects\HireAssist\backend\app\schemas\auth.py:13: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class UserCreate(UserBase):
+
+app\schemas\auth.py:28
+  E:\Projects\HireAssist\backend\app\schemas\auth.py:28: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class UserLogin(BaseModel):
+
+app\schemas\auth.py:40
+  E:\Projects\HireAssist\backend\app\schemas\auth.py:40: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class TokenResponse(BaseModel):
+
+app\schemas\auth.py:52
+  E:\Projects\HireAssist\backend\app\schemas\auth.py:52: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class UserResponse(UserBase):
+
+app\schemas\auth.py:72
+  E:\Projects\HireAssist\backend\app\schemas\auth.py:72: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class LoginResponse(BaseModel):
+
+venv\Lib\site-packages\PyPDF2\__init__.py:21
+  E:\Projects\HireAssist\backend\venv\Lib\site-packages\PyPDF2\__init__.py:21: DeprecationWarning: PyPDF2 is deprecated. Please move to the pypdf library instead.
+    warnings.warn(
+
+venv\Lib\site-packages\spacy\cli\_util.py:23
+  E:\Projects\HireAssist\backend\venv\Lib\site-packages\spacy\cli\_util.py:23: DeprecationWarning: Importing 'parser.split_arg_string' is deprecated, it will only be available in 'shell_completion' in Click 9.0.
+    from click.parser import split_arg_string
+
+venv\Lib\site-packages\weasel\util\config.py:8
+  E:\Projects\HireAssist\backend\venv\Lib\site-packages\weasel\util\config.py:8: DeprecationWarning: Importing 'parser.split_arg_string' is deprecated, it will only be available in 'shell_completion' in Click 9.0.
+    from click.parser import split_arg_string
+
+app\schemas\resumes.py:35
+  E:\Projects\HireAssist\backend\app\schemas\resumes.py:35: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class ParseResumeResponse(BaseModel):
+
+tests/test_enhanced_endpoints.py::test_parse_resume_endpoint_success
+tests/test_enhanced_endpoints.py::test_parse_resume_not_found
+tests/test_enhanced_endpoints.py::test_parse_resume_file_error
+tests/test_enhanced_endpoints.py::test_parse_resume_with_rag
+  E:\Projects\HireAssist\backend\app\core\security.py:41: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+
+tests/test_enhanced_endpoints.py::test_parse_resume_endpoint_success
+tests/test_enhanced_endpoints.py::test_parse_resume_unauthorized
+tests/test_enhanced_endpoints.py::test_parse_resume_invalid_token
+tests/test_enhanced_endpoints.py::test_parse_resume_not_found
+tests/test_enhanced_endpoints.py::test_parse_resume_file_error
+tests/test_enhanced_endpoints.py::test_parse_resume_with_rag
+tests/test_enhanced_endpoints.py::test_global_error_handler
+tests/test_health.py::test_health_check
+tests/test_health.py::test_api_response_structure
+  E:\Projects\HireAssist\backend\app\main.py:152: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    start = datetime.utcnow()
+
+tests/test_enhanced_endpoints.py::test_parse_resume_endpoint_success
+tests/test_enhanced_endpoints.py::test_parse_resume_not_found
+tests/test_enhanced_endpoints.py::test_parse_resume_file_error
+tests/test_enhanced_endpoints.py::test_parse_resume_with_rag
+  E:\Projects\HireAssist\backend\venv\Lib\site-packages\jose\jwt.py:311: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = timegm(datetime.utcnow().utctimetuple())
+
+tests/test_enhanced_endpoints.py::test_parse_resume_endpoint_success
+tests/test_enhanced_endpoints.py::test_parse_resume_unauthorized
+tests/test_enhanced_endpoints.py::test_parse_resume_invalid_token
+tests/test_enhanced_endpoints.py::test_parse_resume_not_found
+tests/test_enhanced_endpoints.py::test_parse_resume_file_error
+tests/test_enhanced_endpoints.py::test_parse_resume_with_rag
+tests/test_enhanced_endpoints.py::test_global_error_handler
+tests/test_health.py::test_health_check
+tests/test_health.py::test_api_response_structure
+  E:\Projects\HireAssist\backend\app\main.py:154: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    duration_ms = int((datetime.utcnow() - start).total_seconds() * 1000)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_enhanced_endpoints.py::test_parse_resume_unauthorized - ass...
+============ 1 failed, 43 passed, 2 skipped, 36 warnings in 36.27s ============
