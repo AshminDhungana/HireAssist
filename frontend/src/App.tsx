@@ -10,8 +10,9 @@ const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'))
 const InTheFuturePage = lazy(() => import('./pages/InTheFuturePage'))
 const JobManagementPage = lazy(() => import('./pages/JobManagementPage'))
 const ResumeManagementPage = lazy(() => import('./pages/ResumeManagementPage'))
+const AdminApprovalsPage = lazy(() => import('./pages/AdminApprovalsPage'))
 
-type PageType = 'home' | 'comparison' | 'matching' | 'candidates' | 'analytics' | 'future' | 'jobs' | 'resumes'
+type PageType = 'home' | 'comparison' | 'matching' | 'candidates' | 'analytics' | 'future' | 'jobs' | 'resumes' | 'admin'
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('home')
@@ -55,6 +56,7 @@ export default function App() {
   const isAnalyticsPage = currentPage === 'analytics'
   const isJobsPage = currentPage === 'jobs'
   const isResumesPage = currentPage === 'resumes'
+  const isAdminPage = currentPage === 'admin'
 
   // Navigation button component (reusable)
   const NavButton = ({
@@ -163,6 +165,15 @@ export default function App() {
               label="Analytics"
               color="from-cyan-600 to-blue-600"
             />
+          {user?.role === 'admin' && (
+            <NavButton
+              isActive={isAdminPage}
+              onClick={() => setCurrentPage('admin')}
+              icon="🛡️"
+              label="Approvals"
+              color="from-slate-600 to-gray-700"
+            />
+          )}
             <NavButton
               isActive={currentPage === 'future'}
               onClick={() => setCurrentPage('future')}
@@ -256,6 +267,13 @@ export default function App() {
           {isAnalyticsPage && (
             <Suspense fallback={<LoadingSpinner />}>
               <AnalyticsPage />
+            </Suspense>
+          )}
+
+          {/* ADMIN APPROVALS PAGE (admins only) */}
+          {isAdminPage && user?.role === 'admin' && (
+            <Suspense fallback={<LoadingSpinner />}>
+              <AdminApprovalsPage />
             </Suspense>
           )}
 

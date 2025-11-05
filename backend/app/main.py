@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.api.v1 import auth, resumes, candidates, jobs, matching, health
+from app.api.v1 import auth, resumes, candidates, jobs, matching, health, analytics, vectors
 from app.core.database import engine, Base, async_session
 from fastapi.responses import JSONResponse
 from app.services.resumeparser import FileParseError
@@ -147,6 +147,8 @@ app.include_router(jobs.router, prefix="/api/v1/jobs", tags=["jobs"])
 app.include_router(matching.router, prefix="/api/v1/matching", tags=["matching"])
 app.include_router(admin.router, prefix="/api/v1", tags=["admin"])
 app.include_router(skills_router, prefix="/api/v1/skills", tags=["skills"])
+app.include_router(analytics.router, prefix="/api/v1", tags=["analytics"])
+app.include_router(vectors.router, prefix="/api/v1", tags=["vectors"])
 
 
 

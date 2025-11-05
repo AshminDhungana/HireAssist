@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, Select, Button, Badge } from '../components/ui'
 import { LineChart, BarChart } from '../components/charts'
+import { analyticsService } from '../services/analyticsService'
 
 interface AnalyticsData {
   totalJobs: number
@@ -14,17 +15,29 @@ interface AnalyticsData {
 
 export default function AnalyticsPage() {
   const [dateRange, setDateRange] = useState('30')
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
+    totalJobs: 0,
+    totalCandidates: 0,
+    totalApplications: 0,
+    hiredCount: 0,
+    avgMatchScore: 0,
+    conversionRate: 0,
+    timeToHire: 0,
+  })
+  const [error, setError] = useState<string | null>(null)
 
-  // Mock analytics data
-  const analyticsData: AnalyticsData = {
-    totalJobs: 24,
-    totalCandidates: 156,
-    totalApplications: 428,
-    hiredCount: 12,
-    avgMatchScore: 78.5,
-    conversionRate: 2.8,
-    timeToHire: 18,
-  }
+  useEffect(() => {
+    const load = async () => {
+      setError(null)
+      const result = await analyticsService.getSummary()
+      if (result.success) {
+        setAnalyticsData(result.data)
+      } else {
+        setError(result.error || 'Failed to load analytics')
+      }
+    }
+    load()
+  }, [])
 
   const chartData = {
     // Applications over time (30 days)
@@ -103,6 +116,12 @@ export default function AnalyticsPage() {
           </div>
         </div>
       </section>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

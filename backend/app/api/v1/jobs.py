@@ -9,6 +9,7 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 import uuid
 import logging
+from app.services.embeddings import get_embedding, vector_store
 
 logger = logging.getLogger(__name__)
 
@@ -94,6 +95,14 @@ async def create_job(
     await db.refresh(job)
     
     logger.info(f"Job created: {job.id}")
+
+    # Upsert job embedding for vector matching
+    try:
+        text = f"{job.title}\n{job.description}\n{job.requirements}"
+        emb = get_embedding(text[:5000])
+        vector_store.upsert("jobs", [(str(job.id), emb, {"title": job.title})])
+    except Exception:
+        logger.warning("Failed to upsert job embedding")
     
     return {
         "message": "Job posted successfully",

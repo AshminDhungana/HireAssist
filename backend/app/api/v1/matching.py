@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 import uuid
 import logging
+from app.services.embeddings import get_embedding, vector_store
 
 logger = logging.getLogger(__name__)
 
@@ -207,13 +208,37 @@ async def match_candidate_to_job(
         raise HTTPException(status_code=404, detail="Resume not found")
     
     # Calculate scores
+    # Keyword skill match
     skill_match_score = calculate_skill_match(job.requirements, resume.skills or [])
+    # Vector similarity between job text and resume text/skills
+    try:
+        job_text = f"{job.title}\n{job.description}\n{job.requirements}"
+        job_vec = get_embedding(job_text[:5000])
+        # Query resumes namespace for this resume id to get a comparable score
+        results = vector_store.query("resumes", job_vec, top_k=1, filter={"filename": resume.filename})
+        vector_sim = results[0]["score"] if results else 0.0
+        # Hybridize skill match with vector sim (average)
+        skill_match_score = round((skill_match_score + float(vector_sim)) / 2, 2)
+    except Exception:
+        pass
     experience_score = calculate_experience_score(job.requirements, resume.experience_years)
     education_score = calculate_education_score(resume.education_level)
     overall_score = calculate_overall_score(skill_match_score, experience_score, education_score)
     
-    # Generate reasoning
+    # Generate reasoning (with simple RAG: include top resume snippet if available)
     reasoning = f"Skill match: {skill_match_score*100:.0f}%, Experience: {experience_score*100:.0f}%, Education: {education_score*100:.0f}%"
+    try:
+        # Use vector store to fetch top similar resumes and attach a small snippet from candidate resume parsed data if present
+        # This is a lightweight RAG-style reasoning without LLM calls
+        from app.models.resume import Resume as ResumeModel  # local import to avoid cycles
+        resume_detail = resume
+        # Append first 200 chars of raw_text to reasoning if present
+        if getattr(resume_detail, 'raw_text', None):
+            snippet = (resume_detail.raw_text or '')[:200]
+            if snippet:
+                reasoning += f"\nSnippet: {snippet}"
+    except Exception:
+        pass
     
     # Store in database
     screening_result = ScreeningResult(

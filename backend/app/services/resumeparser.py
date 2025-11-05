@@ -203,9 +203,13 @@ class ResumeParser:
 
         builtin_synonyms = {
             "py": "Python",
+            "pyton": "Python",
             "python3": "Python",
             "python2": "Python",
             "js": "JavaScript",
+            "javscript": "JavaScript",
+            "nodejs": "Node.js",
+            "reactjs": "React",
             "tsx": "TypeScript",
             "ts": "TypeScript",
             "tf": "TensorFlow",
@@ -213,6 +217,8 @@ class ResumeParser:
             "cv": "OpenCV",
             "dockercompose": "Docker Compose",
             "k8s": "Kubernetes",
+            "kubernates": "Kubernetes",
+            "postgressql": "PostgreSQL",
         }
 
         for entry in skills_source:
@@ -258,94 +264,123 @@ class ResumeParser:
 
     def extract_experience(self, text: str) -> List[Dict[str, Optional[str]]]:
         """Extract structured work experience entries from text."""
-        experiences = []
+        experiences: List[Dict[str, Optional[str]]] = []
         lines = [l.strip() for l in text.splitlines() if l.strip()]
-        
-        date_pattern = r"(?:\d{4}[-–]\d{4}|\d{4}\s*[-–]\s*(?:present|current|now)|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4})"
-        title_pattern = r"\b(Senior|Lead|Principal|Staff|Software|Developer|Engineer|Manager|Director|Architect|Consultant)\b"
-        
-        current_entry = {}
-        for line in lines:
-            if len(line) < 10:
+
+        date_pattern = r"(?:\d{4}\s*[-–]\s*(?:\d{4}|present|current|now)|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4})"
+        title_company_pattern = re.compile(r"^(?P<title>.+?)\s+at\s+(?P<company>.+)$", re.IGNORECASE)
+        title_keywords = re.compile(r"\b(Senior|Lead|Principal|Staff|Software|Developer|Engineer|Manager|Director|Architect|Consultant)\b", re.IGNORECASE)
+
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            if len(line) < 6:
+                i += 1
                 continue
-                
-            if re.search(date_pattern, line, re.IGNORECASE):
-                if current_entry:
-                    experiences.append(current_entry)
-                current_entry = {"dates": re.search(date_pattern, line, re.IGNORECASE).group()}
-                
-                if re.search(title_pattern, line):
-                    parts = re.split(date_pattern, line)
-                    if len(parts) >= 2:
-                        current_entry["title"] = parts[0].strip()
-                        current_entry["company"] = parts[1].strip()
-            
-            elif current_entry:
-                if "title" not in current_entry and re.search(title_pattern, line):
-                    current_entry["title"] = line.strip()
-                elif "company" not in current_entry and not re.search(date_pattern, line):
-                    current_entry["company"] = line.strip()
-                
-                if "title" in current_entry and "company" in current_entry:
-                    current_entry.setdefault("description", line.strip())
-        
-        if current_entry:
-            experiences.append(current_entry)
-        
-        clean_experiences = []
+
+            entry: Dict[str, Optional[str]] = {}
+
+            # Case 1: "Title at Company" line possibly followed by a date line
+            m = title_company_pattern.match(line)
+            if m:
+                entry["title"] = m.group("title").strip()
+                entry["company"] = m.group("company").strip()
+                # Look ahead for a dates line within next 2 lines
+                lookahead = 1
+                while lookahead <= 2 and i + lookahead < len(lines):
+                    la = lines[i + lookahead]
+                    d = re.search(date_pattern, la, re.IGNORECASE)
+                    if d:
+                        entry["dates"] = d.group().strip()
+                        break
+                    lookahead += 1
+                if entry:
+                    experiences.append(entry)
+                i += 1
+                continue
+
+            # Case 2: Date line first, followed by title/company info
+            d = re.search(date_pattern, line, re.IGNORECASE)
+            if d:
+                entry["dates"] = d.group().strip()
+                # Look back and ahead for title/company
+                # Prefer the immediate previous or next line containing keywords
+                prev = lines[i - 1] if i - 1 >= 0 else ""
+                nxt = lines[i + 1] if i + 1 < len(lines) else ""
+                for candidate in (prev, nxt):
+                    if title_keywords.search(candidate):
+                        mm = title_company_pattern.match(candidate)
+                        if mm:
+                            entry["title"] = mm.group("title").strip()
+                            entry["company"] = mm.group("company").strip()
+                        else:
+                            entry.setdefault("title", candidate.strip())
+                experiences.append(entry)
+                i += 1
+                continue
+
+            i += 1
+
+        # Deduplicate and keep up to 10
+        clean_experiences: List[Dict[str, Optional[str]]] = []
         seen = set()
         for exp in experiences:
             key = (exp.get("company", ""), exp.get("title", ""), exp.get("dates", ""))
-            if key not in seen:
+            if key not in seen and (exp.get("company") or exp.get("title") or exp.get("dates")):
                 seen.add(key)
                 clean_experiences.append(exp)
-        
+
         return clean_experiences[:10]
 
     def extract_education(self, text: str) -> List[Dict[str, Optional[str]]]:
         """Extract structured education entries from text."""
-        education = []
+        results: List[Dict[str, Optional[str]]] = []
         lines = [l.strip() for l in text.splitlines() if l.strip()]
-        
-        degree_pattern = r"\b(BS|BA|B\.Sc|MS|M\.Sc|PhD|MBA|Bachelor|Master|Doctor|Associate|Diploma|Certificate)\b"
-        date_pattern = r"(?:\d{4}[-–]\d{4}|\d{4})"
-        institution_keywords = r"\b(University|College|Institute|School)\b"
-        
-        current_entry = {}
-        for line in lines:
-            if len(line) < 10:
+
+        degree_pattern = re.compile(r"\b(BS|BA|B\.Sc|MS|M\.Sc|PhD|MBA|Bachelor|Master|Doctor|Associate|Diploma|Certificate)\b", re.IGNORECASE)
+        date_pattern = re.compile(r"\b\d{4}\s*[-–]\s*\d{4}\b|\b\d{4}\b")
+        institution_pattern = re.compile(r"([A-Z][A-Za-z\s&]+(?:University|College|Institute|School))", re.IGNORECASE)
+
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            if degree_pattern.search(line):
+                entry: Dict[str, Optional[str]] = {"degree": line.strip()}
+                # Look ahead up to 2 lines for institution and dates (e.g., "Tech University, 2015-2019")
+                for j in range(1, 3):
+                    if i + j >= len(lines):
+                        break
+                    la = lines[i + j]
+                    inst = institution_pattern.search(la)
+                    if inst and not entry.get("institution"):
+                        entry["institution"] = inst.group(1).strip()
+                    d = date_pattern.search(la)
+                    if d:
+                        entry["dates"] = d.group(0)
+                # If institution or dates found in same line
+                if not entry.get("institution"):
+                    inst_same = institution_pattern.search(line)
+                    if inst_same:
+                        entry["institution"] = inst_same.group(1).strip()
+                if not entry.get("dates"):
+                    d_same = date_pattern.search(line)
+                    if d_same:
+                        entry["dates"] = d_same.group(0)
+                results.append(entry)
+                i += 1
                 continue
-                
-            if re.search(degree_pattern, line, re.IGNORECASE):
-                if current_entry:
-                    education.append(current_entry)
-                current_entry = {"degree": line.strip()}
-                
-                if re.search(date_pattern, line):
-                    current_entry["dates"] = re.search(date_pattern, line).group()
-                if re.search(institution_keywords, line, re.IGNORECASE):
-                    inst_match = re.search(fr".*?({institution_keywords}).*?(?={date_pattern}|\Z)", line, re.IGNORECASE)
-                    if inst_match:
-                        current_entry["institution"] = inst_match.group().strip()
-            
-            elif current_entry:
-                if "dates" not in current_entry and re.search(date_pattern, line):
-                    current_entry["dates"] = re.search(date_pattern, line).group()
-                elif "institution" not in current_entry and re.search(institution_keywords, line, re.IGNORECASE):
-                    current_entry["institution"] = line.strip()
-        
-        if current_entry:
-            education.append(current_entry)
-        
-        clean_education = []
+            i += 1
+
+        # Deduplicate and keep up to 10
+        cleaned: List[Dict[str, Optional[str]]] = []
         seen = set()
-        for edu in education:
+        for edu in results:
             key = (edu.get("degree", ""), edu.get("institution", ""), edu.get("dates", ""))
-            if key not in seen:
+            if key not in seen and edu.get("degree"):
                 seen.add(key)
-                clean_education.append(edu)
-        
-        return clean_education[:10]
+                cleaned.append(edu)
+
+        return cleaned[:10]
 
     def calculate_experience_years(self, text: str) -> int:
         pattern = r"(\d+)\s*(?:\+)?\s*years?\s+(?:of\s+)?experience"
@@ -367,7 +402,11 @@ class ResumeParser:
         try:
             if mimetype == "application/pdf":
                 text = self.extract_text_from_pdf(filepath)
-            elif mimetype.endswith("wordprocessingml.document") or filepath.lower().endswith('.docx'):
+            elif (
+                mimetype.endswith("wordprocessingml.document")
+                or mimetype == "application/msword"
+                or filepath.lower().endswith('.docx')
+            ):
                 text = self.extract_text_from_docx(filepath)
             else:
                 raise FileParseError(f"Unsupported file type: {mimetype}")

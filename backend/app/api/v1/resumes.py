@@ -13,6 +13,7 @@ from app.models.resume import Resume
 from app.core.security import decode_token
 from app.core.config import settings
 import uuid
+from app.services.embeddings import get_embedding, vector_store
 
 router = APIRouter(prefix="/resumes", tags=["resumes"])
 logger = logging.getLogger(__name__)
@@ -151,6 +152,14 @@ async def upload_resume(
     await db.refresh(resume)
 
     logger.info(f"Resume saved with ID: {resume.id}, Standardized Skills: {resume.skills}")
+
+    # ===== UPSERT EMBEDDING =====
+    try:
+        text_for_embed = (parsed_data.get('raw_text') or '') + '\n' + ' '.join(parsed_data.get('skills', []))
+        emb = get_embedding(text_for_embed[:5000])
+        vector_store.upsert("resumes", [(str(resume.id), emb, {"filename": filename, "candidate_id": str(candidate.id)})])
+    except Exception:
+        logger.warning("Failed to upsert resume embedding; continuing")
 
     return {
         "message": "Resume uploaded successfully",
@@ -318,6 +327,14 @@ async def parse_resume(
         await db.refresh(resume_record)
         
         logger.info(f"Resume {resume_id} parsed and saved. Skills: {resume_record.skills}")
+
+        # Update embedding after re-parse
+        try:
+            text_for_embed = (parsed.get('raw_text') or '') + '\n' + ' '.join(parsed.get('skills', []))
+            emb = get_embedding(text_for_embed[:5000])
+            vector_store.upsert("resumes", [(str(resume_record.id), emb, {"filename": resume_record.filename, "candidate_id": str(resume_record.candidate_id)})])
+        except Exception:
+            logger.warning("Failed to upsert updated resume embedding")
         
     except Exception as e:
         await db.rollback()

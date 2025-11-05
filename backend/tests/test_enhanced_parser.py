@@ -169,3 +169,16 @@ def test_docx_parsing(sample_docx):
     assert isinstance(parsed, dict)
     assert 'experience' in parsed and isinstance(parsed['experience'], list)
     assert len(parsed['experience']) > 0
+
+
+def test_skill_aliases_and_typos_extraction():
+    parser = ResumeParser()
+    text = (
+        "Experienced in Pyton, js, ReactJS, NodeJS, Kubernates, Postgressql.\n"
+        "Also familiar with TF and NLP."
+    )
+    skills = parser.extract_skills(text)
+
+    # Expect canonicalized skill names from aliases/typos
+    expected = {"Python", "JavaScript", "React", "Node.js", "Kubernetes", "PostgreSQL", "TensorFlow", "NLP"}
+    assert expected.issubset(set(skills)), f"Missing expected skills. Got: {skills}"
