@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Button, Card, Badge, Input, Select } from '../components/ui'
+import { Button, Card, Badge, Input } from '../components/ui'
 import { listResumes, uploadResume, deleteResume, getResumeDetails } from '../api/resumeService'
 
 interface Resume {
