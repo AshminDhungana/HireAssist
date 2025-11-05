@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Button, Card, Badge } from '../components/ui'
+import { Button, Card, Badge, Input, Select } from '../components/ui'
 import { listResumes, uploadResume, deleteResume, getResumeDetails } from '../api/resumeService'
 
 interface Resume {
@@ -29,6 +29,9 @@ export default function ResumeManagementPage() {
   const [uploading, setUploading] = useState(false)
   const [selectedResume, setSelectedResume] = useState<ResumeDetails | null>(null)
   const [showModal, setShowModal] = useState(false)
+  const [filterSkill, setFilterSkill] = useState('')
+  const [filterMinYears, setFilterMinYears] = useState('')
+  const [filterEducation, setFilterEducation] = useState('')
 
   useEffect(() => {
     loadResumes()
@@ -38,7 +41,11 @@ export default function ResumeManagementPage() {
     setLoading(true)
     setError(null)
     try {
-      const result = await listResumes()
+      const params: any = {}
+      if (filterSkill.trim()) params.skill = filterSkill.split(',').map(s => s.trim()).filter(Boolean)
+      if (filterMinYears) params.min_experience_years = Number(filterMinYears)
+      if (filterEducation.trim()) params.education_contains = filterEducation.trim()
+      const result = await listResumes(params)
       if (result.success) {
         setResumes(result.data.resumes)
       } else {
@@ -139,6 +146,25 @@ export default function ResumeManagementPage() {
 
       {/* Upload Section */}
       <Card>
+        {/* Filters */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-1">Skills (comma-separated)</label>
+            <Input value={filterSkill} onChange={(e) => setFilterSkill(e.target.value)} placeholder="Python, React" />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-1">Min Experience (years)</label>
+            <Input type="number" value={filterMinYears} onChange={(e) => setFilterMinYears(e.target.value)} placeholder="2" />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-1">Education contains</label>
+            <Input value={filterEducation} onChange={(e) => setFilterEducation(e.target.value)} placeholder="Bachelor" />
+          </div>
+          <div className="flex items-end gap-2">
+            <Button onClick={loadResumes} variant="primary">🔎 Apply</Button>
+            <Button onClick={() => { setFilterSkill(''); setFilterMinYears(''); setFilterEducation(''); setTimeout(loadResumes, 0) }} variant="secondary">♻️ Reset</Button>
+          </div>
+        </div>
         <h3 className="text-xl font-bold text-gray-900 mb-4">📤 Upload Resume</h3>
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
           <input

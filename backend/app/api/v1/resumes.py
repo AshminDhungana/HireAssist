@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, status, Depends, Header
+from fastapi import APIRouter, UploadFile, File, HTTPException, status, Depends, Header, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from typing import List
@@ -366,7 +366,10 @@ async def parse_resume(
 @router.get("/list")
 async def list_resumes(
     authorization: str = Header(None),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    skill: list[str] | None = Query(None, description="Filter resumes that contain ANY of these skills"),
+    min_experience_years: int | None = Query(None, ge=0, description="Minimum experience years"),
+    education_contains: str | None = Query(None, description="Substring match on education level")
 ):
     """List all resumes for authenticated user with standardized skills"""
     if not authorization:
@@ -387,11 +390,21 @@ async def list_resumes(
         raise HTTPException(status_code=404, detail="Candidate not found")
     
     # Get resumes
-    resumes = await db.execute(
-        select(Resume)
-        .where(Resume.candidate_id == candidate.id)
-        .order_by(desc(Resume.created_at))
-    )
+    query = select(Resume).where(Resume.candidate_id == candidate.id)
+    # Filters
+    from sqlalchemy import or_
+    if skill:
+        skill_filters = [Resume.skills.contains([s]) for s in skill if s]
+        if skill_filters:
+            query = query.where(or_(*skill_filters))
+    if min_experience_years is not None:
+        query = query.where(Resume.experience_years >= min_experience_years)
+    if education_contains:
+        query = query.where(Resume.education_level.ilike(f"%{education_contains}%"))
+
+    query = query.order_by(desc(Resume.created_at))
+
+    resumes = await db.execute(query)
     resumes = resumes.scalars().all()
     
     return {

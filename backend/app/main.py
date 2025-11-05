@@ -1,11 +1,12 @@
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.api.v1 import auth, resumes, candidates, jobs, matching, health, analytics, vectors
+from app.api.v1 import auth, resumes, candidates, jobs, matching, health, analytics, vectors, tasks
 from app.core.database import engine, Base, async_session
 from fastapi.responses import JSONResponse
 from app.services.resumeparser import FileParseError
-from app.core.middleware import global_error_handler
+from app.core.middleware import global_error_handler, request_context_middleware, rate_limit_middleware, security_headers_middleware
+from app.core.metrics import record_request, export_prometheus
 from app.models.users import User
 from app.core.security import get_password_hash
 from sqlalchemy import select
@@ -77,6 +78,14 @@ async def lifespan(app: FastAPI):
     # Create superuser admin
     await create_superuser_admin()
     
+    # Start in-process task queue worker
+    try:
+        from app.services.task_queue import task_queue
+        await task_queue.start()
+        logger.info("✅ Task queue worker started")
+    except Exception as e:
+        logger.warning(f"Task queue not started: {e}")
+
     logger.info("✅ HireAssist API started successfully!")
     
     yield
@@ -103,6 +112,33 @@ app = FastAPI(
 @app.middleware("http")
 async def error_handling_middleware(request: Request, call_next):
     return await global_error_handler(request, call_next)
+# Request ID and security middlewares
+@app.middleware("http")
+async def add_request_context(request: Request, call_next):
+    return await request_context_middleware(request, call_next)
+
+
+@app.middleware("http")
+async def apply_rate_limit(request: Request, call_next):
+    return await rate_limit_middleware(request, call_next)
+
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    return await security_headers_middleware(request, call_next)
+
+
+# Metrics middleware
+@app.middleware("http")
+async def metrics_middleware(request: Request, call_next):
+    start = datetime.utcnow()
+    response = await call_next(request)
+    duration_ms = int((datetime.utcnow() - start).total_seconds() * 1000)
+    try:
+        record_request(request.url.path, response.status_code, duration_ms)
+    except Exception:
+        pass
+    return response
 
 
 # Add CORS middleware
@@ -149,6 +185,12 @@ app.include_router(admin.router, prefix="/api/v1", tags=["admin"])
 app.include_router(skills_router, prefix="/api/v1/skills", tags=["skills"])
 app.include_router(analytics.router, prefix="/api/v1", tags=["analytics"])
 app.include_router(vectors.router, prefix="/api/v1", tags=["vectors"])
+app.include_router(tasks.router, prefix="/api/v1", tags=["tasks"])
+
+
+@app.get("/api/v1/metrics")
+def prometheus_metrics():
+    return Response(content=export_prometheus(), media_type="text/plain; version=0.0.4")
 
 
 

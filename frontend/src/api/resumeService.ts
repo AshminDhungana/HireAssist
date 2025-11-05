@@ -79,9 +79,9 @@ export const uploadResume = async (file: File): Promise<UploadResponse> => {
   }
 }
 
-export const listResumes = async () => {
+export const listResumes = async (params?: { skill?: string[]; min_experience_years?: number; education_contains?: string }) => {
   try {
-    const response = await api.get('/api/v1/resumes/list')
+    const response = await api.get('/api/v1/resumes/list', { params })
     return {
       success: true,
       data: response.data

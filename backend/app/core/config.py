@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     QDRANT_URL: Optional[str] = None
     QDRANT_API_KEY: Optional[str] = None
 
+    # CORS & Security
+    ALLOW_ORIGINS: str = "http://localhost:5173,http://localhost:3000,http://localhost:3001"
+    RATE_LIMIT_PER_MINUTE: int = 120
+
     class Config:
         env_file = ".env"
         case_sensitive = True
