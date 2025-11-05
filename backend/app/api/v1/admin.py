@@ -9,7 +9,7 @@ import uuid
 import logging
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/admin", tags=["admin"])
+router = APIRouter(tags=["admin"])
 
 
 def extract_admin_user(authorization: str) -> uuid.UUID:
