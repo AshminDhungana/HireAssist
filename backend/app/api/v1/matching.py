@@ -157,7 +157,7 @@ def calculate_overall_score(
 @router.post("/match", status_code=status.HTTP_201_CREATED)
 async def match_candidate_to_job(
     request: MatchRequest,
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -286,7 +286,7 @@ async def get_match_results(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     min_score: Optional[float] = Query(None, ge=0, le=1, description="Filter by minimum score"),
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """

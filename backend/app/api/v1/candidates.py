@@ -60,7 +60,7 @@ def extract_user_id(authorization: str) -> str:
 @router.post("/create-profile", status_code=status.HTTP_201_CREATED)
 async def create_candidate_profile(
     data: CandidateCreate,
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Create candidate profile for authenticated user"""
@@ -98,7 +98,7 @@ async def create_candidate_profile(
 
 @router.get("/me")
 async def get_my_profile(
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Get current user's candidate profile with resumes"""
@@ -148,7 +148,7 @@ async def get_my_profile(
 @router.put("/update-profile")
 async def update_profile(
     data: CandidateUpdate,
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Update current user's candidate profile"""
@@ -176,7 +176,7 @@ async def update_profile(
 async def list_candidates(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """List all candidates"""
@@ -208,7 +208,7 @@ async def list_candidates(
 @router.get("/{candidate_id}")
 async def get_candidate(
     candidate_id: str,
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Get candidate details"""
@@ -239,7 +239,7 @@ async def get_candidate(
 
 @router.delete("/delete-profile")
 async def delete_profile(
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Delete current user's candidate profile"""

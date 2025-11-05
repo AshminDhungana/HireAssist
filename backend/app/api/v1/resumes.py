@@ -30,7 +30,7 @@ if not os.path.exists(UPLOAD_DIR):
 @router.post("/upload", status_code=status.HTTP_201_CREATED)
 async def upload_resume(
     file: UploadFile = File(...),
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Upload and parse resume with skills standardization"""
@@ -174,7 +174,7 @@ async def upload_resume(
 async def parse_resume(
     resume_id: str, 
     parse_options: ParseResumeRequest,
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Parse resume with optional detailed extraction"""
@@ -365,7 +365,7 @@ async def parse_resume(
 
 @router.get("/list")
 async def list_resumes(
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db),
     skill: list[str] | None = Query(None, description="Filter resumes that contain ANY of these skills"),
     min_experience_years: int | None = Query(None, ge=0, description="Minimum experience years"),
@@ -425,7 +425,7 @@ async def list_resumes(
 @router.get("/{resume_id}/details")
 async def get_resume_details(
     resume_id: str,
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Get detailed resume information with standardized skills"""
@@ -466,7 +466,7 @@ async def get_resume_details(
 @router.get("/{resume_id}/download")
 async def download_resume(
     resume_id: str,
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Download a resume file"""
@@ -507,7 +507,7 @@ async def download_resume(
 @router.delete("/{resume_id}")
 async def delete_resume(
     resume_id: str,
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Delete a resume and its file"""

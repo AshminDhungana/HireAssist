@@ -176,7 +176,7 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_profile(
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -236,7 +236,7 @@ async def get_current_user_profile(
 # NEW: Get approval status endpoint
 @router.get("/approval-status")
 async def get_approval_status(
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """

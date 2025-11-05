@@ -65,7 +65,7 @@ def extract_user_id(authorization: str) -> str:
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 async def create_job(
     job_data: JobCreate,
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -117,7 +117,7 @@ async def list_jobs(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     status_filter: Optional[str] = Query(None, description="Filter by status (active, closed)"),
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -170,7 +170,7 @@ async def list_jobs(
 @router.get("/{job_id}")
 async def get_job_details(
     job_id: str,
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -213,7 +213,7 @@ async def get_job_details(
 async def update_job(
     job_id: str,
     job_data: JobUpdate,
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -261,7 +261,7 @@ async def update_job(
 @router.delete("/{job_id}")
 async def delete_job(
     job_id: str,
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """

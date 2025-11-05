@@ -36,7 +36,7 @@ def extract_admin_user(authorization: str) -> uuid.UUID:
 
 
 async def verify_admin_access(
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ) -> User:
     """Verify that user is admin. Returns admin user object."""
@@ -56,7 +56,7 @@ async def verify_admin_access(
 
 @router.get("/pending-users")
 async def get_pending_users(
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Get list of pending user approvals (Admin only)"""
@@ -93,7 +93,7 @@ async def get_pending_users(
 @router.post("/approve-user/{user_id}")
 async def approve_user(
     user_id: str,
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Approve a pending user (Admin only)"""
@@ -139,7 +139,7 @@ async def approve_user(
 @router.post("/reject-user/{user_id}")
 async def reject_user(
     user_id: str,
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Reject and delete a pending user (Admin only)"""
@@ -183,7 +183,7 @@ async def reject_user(
 
 @router.get("/stats")
 async def get_admin_stats(
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Get admin dashboard statistics"""

@@ -30,11 +30,14 @@ export default function App() {
   }, [])
 
   const handleLoginSuccess = (token: string, userData: any) => {
-    localStorage.setItem('access_token', token);
-    setIsAuthenticated(true)
-    setUser(userData)
-    setCurrentPage('home')
+  // Store token properly 
+  if (token && !localStorage.getItem('access_token')) {
+    localStorage.setItem('access_token', token)
   }
+  setIsAuthenticated(true)
+  setUser(userData)
+  setCurrentPage('home')
+}
 
   const handleLogout = () => {
     localStorage.removeItem('access_token')

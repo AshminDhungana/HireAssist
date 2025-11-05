@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime
 from app.core.database import async_session, engine, Base
 from app.models.users import User
-from app.core.security import hash_password
+from app.core.security import get_password_hash
 from sqlalchemy import select
 
 async def init_database():
@@ -40,7 +40,7 @@ async def init_database():
         admin_user = User(
             id=uuid.uuid4(),
             email='admin@hireassist.com',
-            password_hash=hash_password('AdminPassword123!'),
+            password_hash=get_password_hash('AdminPassword123!'),
             first_name='Admin',
             last_name='User',
             role='admin',

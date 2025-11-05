@@ -34,7 +34,7 @@ services:
     networks:
       - hireassist-network
 
-  # FastAPI Backend
+#Backend Service
   backend:
     build:
       context: ./backend
@@ -54,9 +54,17 @@ services:
         condition: service_healthy
     volumes:
       - ./backend:/app
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    # ✅ CHANGE THIS COMMAND:
+    command: >
+      bash -c "
+      echo '🔄 Initializing database...' &&
+      python -m scripts.init_db &&
+      echo '🚀 Starting backend...' &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
     networks:
       - hireassist-network
+
 
   # React Frontend
   frontend:

@@ -30,7 +30,7 @@ def extract_user_id(authorization: Optional[str]) -> str:
 
 @router.get("/analytics/summary")
 async def analytics_summary(
-    authorization: str = Header(None),
+    authorization: str = Header(...),
     db: AsyncSession = Depends(get_db)
 ):
     """Return high-level analytics summary for dashboard."""
