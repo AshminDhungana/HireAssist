@@ -73,7 +73,7 @@ export default function AdminApprovalsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="warning">pending</Badge>
-                  <Button size="sm" variant="success" onClick={() => handleApprove(u.id)}>✅ Approve</Button>
+                  <Button size="sm" variant="primary" onClick={() => handleApprove(u.id)}>✅ Approve</Button>
                   <Button size="sm" variant="danger" onClick={() => handleReject(u.id)}>🗑️ Reject</Button>
                 </div>
               </div>

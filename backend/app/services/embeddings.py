@@ -5,7 +5,7 @@ import math
 from typing import List, Optional
 
 from app.core.config import settings
-from app.services.vector_search import InMemoryVectorSearch
+from app.services.vector_search import get_vector_store
 
 
 def _hashing_embedding(text: str, dim: int = 256) -> List[float]:
@@ -41,5 +41,5 @@ def get_embedding(text: str) -> List[float]:
         return _hashing_embedding(text)
 
 
-# Module-level vector store singleton
-vector_store = InMemoryVectorSearch()
+# Module-level vector store singleton (respects settings.VECTOR_BACKEND)
+vector_store = get_vector_store()

@@ -1,12 +1,23 @@
 from pydantic_settings import BaseSettings
+from typing import Optional
 
 class Settings(BaseSettings):
-    OPENAI_API_KEY: str
-    PINECONE_API_KEY: str
-    SECRET_KEY: str
-    DATABASE_URL: str
-    PINECONE_ENVIRONMENT: str
-    # Add other config vars as needed
+    # Secrets (optional in local dev)
+    OPENAI_API_KEY: Optional[str] = None
+    SECRET_KEY: Optional[str] = None
+    DATABASE_URL: Optional[str] = None
+
+    # Vector DB selection: 'inmemory' | 'pinecone' | 'qdrant'
+    VECTOR_BACKEND: str = "inmemory"
+
+    # Pinecone
+    PINECONE_API_KEY: Optional[str] = None
+    PINECONE_ENVIRONMENT: Optional[str] = None
+    PINECONE_INDEX: Optional[str] = None
+
+    # Qdrant
+    QDRANT_URL: Optional[str] = None
+    QDRANT_API_KEY: Optional[str] = None
 
     class Config:
         env_file = ".env"
