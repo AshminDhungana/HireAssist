@@ -14,7 +14,7 @@ api.interceptors.request.use((config) => {
 export const adminService = {
   getPendingUsers: async () => {
     try {
-      const res = await api.get('/api/v1/pending-users')
+      const res = await api.get('/api/v1/admin/pending-users')  // ✅ ADDED /admin
       return { success: true, data: res.data }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -23,9 +23,10 @@ export const adminService = {
       throw error
     }
   },
+  
   approveUser: async (userId: string) => {
     try {
-      const res = await api.post(`/api/v1/approve-user/${userId}`)
+      const res = await api.post(`/api/v1/admin/approve-user/${userId}`)  // ✅ ADDED /admin
       return { success: true, data: res.data }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -34,9 +35,10 @@ export const adminService = {
       throw error
     }
   },
+  
   rejectUser: async (userId: string) => {
     try {
-      const res = await api.post(`/api/v1/reject-user/${userId}`)
+      const res = await api.post(`/api/v1/admin/reject-user/${userId}`)  // ✅ ADDED /admin
       return { success: true, data: res.data }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -46,5 +48,3 @@ export const adminService = {
     }
   },
 }
-
-

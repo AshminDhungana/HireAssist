@@ -2,7 +2,7 @@ docs/implementation_roadmap.json
 docs/script.py
 
 hireassist-todo.txt
-todo.md
+TODO.md
 
 # --- FRONTEND IGNORE RULES ---
 frontend/node_modules/
