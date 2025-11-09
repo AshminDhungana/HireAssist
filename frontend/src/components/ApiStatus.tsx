@@ -18,10 +18,16 @@ export const ApiStatus: React.FC = () => {
   const handleRetry = useCallback(async () => {
     setIsRetrying(true)
     try {
+      // Use AbortController instead of timeout (fetch doesn't support timeout)
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000)
+
       const response = await fetch(
         import.meta.env.VITE_API_BASE_URL + '/api/v1/health' || 'http://localhost:8000/api/v1/health',
-        { timeout: 5000 }
+        { signal: controller.signal }
       )
+      clearTimeout(timeoutId)
+      
       if (response.ok) {
         console.log('✅ [ApiStatus] Retry successful')
       }
